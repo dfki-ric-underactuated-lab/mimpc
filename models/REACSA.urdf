@@ -1,0 +1,237 @@
+<?xml version="1.0"?>
+<robot name="REACSA">
+    <material name="RED">
+        <color rgba="1.0 0 0 1.0"/>
+    </material>
+
+    <material name="GREEN">
+        <color rgba="0.0 1.0 0 1.0"/>
+    </material>
+    <link name="base_link">
+        <visual>
+            <geometry>
+                <cylinder length="1.0" radius="0.35"/>
+            </geometry>
+        </visual>
+        <inertial>
+            <mass value="198.8"/>
+            <inertia ixx="24.80417083" ixy="0.0" ixz="0.0" iyy="24.80417083" iyz="0.0" izz="12.176"/>
+        </inertial>
+    </link>
+
+    <link name="reaction_wheel">
+        <visual>
+            <geometry>
+                <cylinder length="0.05" radius="0.1480"/>
+            </geometry>
+        </visual>
+        <inertial>
+            <mass value="4.01"/>
+            <inertia ixx="0.02438579" ixy="0.0" ixz="0.0" iyy="0.02438579" iyz="0.0" izz="0.047"/>
+        </inertial>
+    </link>
+
+    <link name="base_marker_x">
+        <visual>
+            <material name="RED" />
+            <origin xyz="0.2 0 0.5" rpy="0 0 0" />
+            <geometry>
+                <box size="0.4 0.05 0.05"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <link name="base_marker_y">
+        <visual>
+            <material name="GREEN" />
+            <origin xyz="0 0.2 0.5" rpy="0 0 0" />
+            <geometry>
+                <box size="0.05 0.4 0.05"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <joint name="joint_base_marker_x" type="fixed">
+        <origin xyz="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="base_marker_x"/>
+    </joint>
+
+    <joint name="joint_base_marker_y" type="fixed">
+        <origin xyz="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="base_marker_y"/>
+    </joint>
+
+
+    <link name="reaction_wheel_point">
+        <visual>
+            <material name="RED" />
+            <geometry>
+                <cylinder length="0.1" radius="0.01"/>
+            </geometry>
+        </visual>
+    </link>
+
+
+    <joint name="joint_reaction_wheel_point" type="fixed">
+        <origin xyz="0 0.05 0.05"/>
+        <parent link="reaction_wheel"/>
+        <child link="reaction_wheel_point"/>
+    </joint>
+
+    <link name="f0">
+        <visual>
+            <origin xyz="0.05 0 0" rpy="0 0 0" />
+            <material name="RED"/>
+            <geometry>
+                <box size="0.1 0.05 0.05"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <link name="f1">
+        <visual>
+            <origin xyz="0.05 0 0" rpy="0 0 0" />
+            <material name="GREEN"/>
+            <geometry>
+                <box size="0.1 0.05 0.05"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <link name="f2">
+        <visual>
+            <origin xyz="0.05 0 0" rpy="0 0 0" />
+            <material name="RED"/>
+            <geometry>
+                <box size="0.1 0.05 0.05"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <link name="f3">
+        <visual>
+            <origin xyz="0.05 0 0" rpy="0 0 0" />
+            <material name="GREEN"/>
+            <geometry>
+                <box size="0.1 0.05 0.05"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <link name="f4">
+        <visual>
+            <origin xyz="0.05 0 0" rpy="0 0 0" />
+            <material name="RED"/>
+            <geometry>
+                <box size="0.1 0.05 0.05"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <link name="f5">
+        <visual>
+            <origin xyz="0.05 0 0" rpy="0 0 0" />
+            <material name="GREEN"/>
+            <geometry>
+                <box size="0.1 0.05 0.05"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <link name="f6">
+        <visual>
+            <origin xyz="0.05 0 0" rpy="0 0 0" />
+            <material name="RED"/>
+            <geometry>
+                <box size="0.1 0.05 0.05"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <link name="f7">
+        <visual>
+            <origin xyz="0.05 0 0" rpy="0 0 0" />
+            <material name="GREEN"/>
+            <geometry>
+                <box size="0.1 0.05 0.05"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <joint name="joint_base_reaction_wheel" type="continuous">
+        <origin xyz="0 0 0.6"/>
+        <axis xyz="0 0 1"/>
+        <parent link="base_link"/>
+        <child link="reaction_wheel"/>
+        <limit velocity="25.0" effort="1.5"/>
+    </joint>
+
+    <transmission name="transmission_reaction_wheel">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="joint_base_reaction_wheel">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="actuator_base_reaction_wheel">
+            <mechanicalReduction>1.0</mechanicalReduction>
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </actuator>
+    </transmission>
+
+    <joint name="joint_world_base" type="planar">
+        <axis xyz="0 0 1"/>
+        <child link="base_link"/>
+        <parent link="world"/>
+    </joint>
+
+    <joint name="joint_base_f0" type="fixed">
+        <parent link="base_link"/>
+        <child link="f0"/>
+        <origin xyz="0.35 0 0" rpy="0 0 1.57079632679"/>
+    </joint>
+
+    <joint name="joint_base_f1" type="fixed">
+        <parent link="base_link"/>
+        <child link="f1"/>
+        <origin xyz="0.35 0 0" rpy="0 0 -1.57079632679"/>
+    </joint>
+
+    <joint name="joint_base_f2" type="fixed">
+        <parent link="base_link"/>
+        <child link="f2"/>
+        <origin xyz="0 0.35 0" rpy="0 0 3.14159"/>
+    </joint>
+
+
+    <joint name="joint_base_f3" type="fixed">
+        <parent link="base_link"/>
+        <child link="f3"/>
+        <origin xyz="0 0.35 0" rpy="0 0 0"/>
+    </joint>
+
+    <joint name="joint_base_f4" type="fixed">
+        <parent link="base_link"/>
+        <child link="f4"/>
+        <origin xyz="-0.35 0 0" rpy="0 0 -1.57079632679"/>
+    </joint>
+
+    <joint name="joint_base_f5" type="fixed">
+        <parent link="base_link"/>
+        <child link="f5"/>
+        <origin xyz="-0.35 0 0" rpy="0 0 1.57079632679"/>
+    </joint>
+
+    <joint name="joint_base_f6" type="fixed">
+        <parent link="base_link"/>
+        <child link="f6"/>
+        <origin xyz="0 -0.35 0" rpy="0 0 0"/>
+    </joint>
+
+    <joint name="joint_base_f7" type="fixed">
+        <parent link="base_link"/>
+        <child link="f7"/>
+        <origin xyz="0 -0.35 0" rpy="0 0 3.14159"/>
+    </joint>
+
+</robot>

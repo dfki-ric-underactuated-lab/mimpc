@@ -1,0 +1,28 @@
+<package>
+    <name>MIMPC++</name>
+    <description brief="A fast typesafe Mixed Integer MPC C++ library">
+    The library was originally developed as a fast implementation of an MPC for European Space Agency's [free-floating platform REACSA](https://www.researchgate.net/profile/Gunter-Just/publication/374631799_REACSA_Actuated_Floating_Platform_for_Orbital_Robotic_Concept_Testing_and_Control_Software_Development/links/6527d23161c4044c404e6c7d/REACSA-Actuated-Floating-Platform-for-Orbital-Robotic-Concept-Testing-and-Control-Software-Development.pdf)
+    which is controlled by a continuous actuated Reaction Wheel and eight binary actuated thrusters under dwell time constraints.
+    This project contains:
+    1. The MIMPC __library__ that has been designed to provide a fast MPC for any system that combines continuous and binary actuators under dwell time constraints.
+    2. A __Simulator__ that provides a simulation based on [Drake toolbox](https://drake.mit.edu/) that simulates the [free-floating platform REACSA](https://www.researchgate.net/profile/Gunter-Just/publication/374631799_REACSA_Actuated_Floating_Platform_for_Orbital_Robotic_Concept_Testing_and_Control_Software_Development/links/6527d23161c4044c404e6c7d/REACSA-Actuated-Floating-Platform-for-Orbital-Robotic-Concept-Testing-and-Control-Software-Development.pdf) controlled by the MPC.
+    3. __Example__ code [(examples/)](../examples/esa_reacsa/main.cpp) that shows how to use the library together with the simulator.
+    </description>
+    <author>FranekStark/franek.stark@dfki.de</author>
+    <maintainer>FranekStark/franek.stark@dfki.de</maintainer>
+
+    <license>BSD-3-Clause</license>
+    <url>...</url>
+    <logo>...</logo>
+
+    <keywords>
+    <keyword>control</keyword>
+    <keyword>library</keyword>
+    <keyword>model predictive control</keyword>
+    <keyword>mixed integer</keyword>
+    </keywords>
+
+    <stage>-1</stage>
+    <use>external</use>
+    <activity>active</activity>
+</package>
