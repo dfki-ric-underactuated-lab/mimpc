@@ -77,16 +77,15 @@ $(function() {
 <p><img src="media/mpc_letter.gif" alt="" class="inline"/></p>
 <h1><a class="anchor" id="autotoc_md12"></a>
 Description</h1>
-<p>Full documentation under: <a href="https://dfki-ric-underactuated-lab.github.io/mimpc/">Documentation</a></p>
 <p>The library was originally developed as a fast implementation of an MPC for European Space Agency's <a href="https://www.researchgate.net/profile/Gunter-Just/publication/374631799_REACSA_Actuated_Floating_Platform_for_Orbital_Robotic_Concept_Testing_and_Control_Software_Development/links/6527d23161c4044c404e6c7d/REACSA-Actuated-Floating-Platform-for-Orbital-Robotic-Concept-Testing-and-Control-Software-Development.pdf">free-floating platform REACSA</a> which is controlled by a continuous actuated Reaction Wheel and eight binary actuated thrusters under dwell time constraints.</p>
 <p>This project contains:</p><ol type="1">
-<li>The MIMPC <b>library</b> that has been designed to provide a fast MPC for any system that combines continuous and binary actuators under dwell time constraints.</li>
+<li>A MIMPC <b>library</b> that has been designed to provide a fast MPC for any system that combines continuous and binary actuators under dwell time constraints.</li>
 <li>A <b>Simulator</b> that provides a simulation based on <a href="https://drake.mit.edu/">Drake toolbox</a> that simulates the <a href="https://www.researchgate.net/profile/Gunter-Just/publication/374631799_REACSA_Actuated_Floating_Platform_for_Orbital_Robotic_Concept_Testing_and_Control_Software_Development/links/6527d23161c4044c404e6c7d/REACSA-Actuated-Floating-Platform-for-Orbital-Robotic-Concept-Testing-and-Control-Software-Development.pdf">free-floating platform REACSA</a> controlled by the MPC.</li>
 <li><b>Example</b> code <a href="../examples/esa_reacsa/main.cpp">(examples/)</a> that shows how to use the library together with the simulator.</li>
 </ol>
 <h1><a class="anchor" id="autotoc_md13"></a>
 Documentation</h1>
-<p>Full documentation under: <a href="https://dfki-ric-underactuated-lab.github.io/mimpc/">Documentation</a> </p>
+<p>Full documentation under: <a href="https://dfki-ric-underactuated-lab.github.io/mimpc/">Documentation &amp; Code-API</a> </p>
 <h2><a class="anchor" id="autotoc_md14"></a>
 Installation</h2>
 <p>Please refer to the <a class="el" href="md_INSTALL.html">installation instructions</a>. For simple use a [Dockerfile](Dockerfile) is available. To build and run the container simply run: </p><div class="fragment"><div class="line">docker build -t mimpc .</div>
@@ -97,12 +96,13 @@ Installation</h2>
 Usage</h2>
 <h3><a class="anchor" id="autotoc_md16"></a>
 Run examples</h3>
-<p>When the simulation and examples have been built, run <code>./build/reacsamimpc</code> within the repos root folder. It starts a few tests with the simulated <a href="https://www.researchgate.net/profile/Gunter-Just/publication/374631799_REACSA_Actuated_Floating_Platform_for_Orbital_Robotic_Concept_Testing_and_Control_Software_Development/links/6527d23161c4044c404e6c7d/REACSA-Actuated-Floating-Platform-for-Orbital-Robotic-Concept-Testing-and-Control-Software-Development.pdf">free-floating platform REACSA</a> and safes the results. The simulation creates a visualisation that can be rendered by opening (<a href="http://localhost:7000">http://localhost:7000</a>) in any browser.</p>
+<p>When the simulation and examples have been built, run <code>./build/reacsamimpc</code> within the repos root folder. It starts a few tests with the simulated <a href="https://www.researchgate.net/profile/Gunter-Just/publication/374631799_REACSA_Actuated_Floating_Platform_for_Orbital_Robotic_Concept_Testing_and_Control_Software_Development/links/6527d23161c4044c404e6c7d/REACSA-Actuated-Floating-Platform-for-Orbital-Robotic-Concept-Testing-and-Control-Software-Development.pdf">free-floating platform REACSA</a> and safes the results. The simulation creates a visualization that can be rendered by opening (<a href="http://localhost:7000">http://localhost:7000</a>) in any browser.</p>
 <h3><a class="anchor" id="autotoc_md17"></a>
 Use the library</h3>
+<p>(Full documentation under: <a href="https://dfki-ric-underactuated-lab.github.io/mimpc/">Documentation &amp; Code-API</a>)</p>
 <p>To get a fully working MIMPC for your own system the system dynamics have to be specified by deriving from <a class="el" href="classmimpc_1_1System.html">mimpc::System</a>. The library provides next to <a class="el" href="classmimpc_1_1System.html">mimpc::System</a> two main interfaces:</p><ul>
-<li><a class="el" href="classmimpc_1_1Solver.html">mimpc::Solver</a> is the low level interface in which the dwell time constraints, the cost function and the system constraints can be specified. It also provides the functionality to set the current state, solve the problem and retrieve the optimal solution. Currently, the library with <a class="el" href="classmimpc_1_1SCIPSolver.html">mimpc::SCIPSolver</a> only contains one Solver which implements this lowe level interface. It is based on the open source SCIP solver (<a href="https://scipopt.org/">https://scipopt.org/</a>). To integrate your favourite solver, derive from <a class="el" href="classmimpc_1_1Solver.html">mimpc::Solver</a></li>
-<li><a class="el" href="classmimpc_1_1MPC.html">mimpc::MPC</a> is the high level interface which warps a configured <a class="el" href="classmimpc_1_1Solver.html">mimpc::Solver</a> implementation and wraps the typical MPC control loop into a simpler interface.</li>
+<li><a class="el" href="classmimpc_1_1Solver.html">mimpc::Solver</a> is the low level interface in which the dwell time constraints, the cost function and the system constraints can be specified. It also provides the functionality to set the current state, solve the problem and retrieve the optimal solution. Currently, the library with <a class="el" href="classmimpc_1_1SCIPSolver.html">mimpc::SCIPSolver</a> only contains one Solver that implements this low-level interface. It is based on the open-source SCIP solver (<a href="https://scipopt.org/">https://scipopt.org/</a>). To integrate your favorite solver, derive from <a class="el" href="classmimpc_1_1Solver.html">mimpc::Solver</a></li>
+<li><a class="el" href="classmimpc_1_1MPC.html">mimpc::MPC</a> is the high-level interface that warps a configured <a class="el" href="classmimpc_1_1Solver.html">mimpc::Solver</a> implementation and wraps the typical MPC control loop into a simpler interface.</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md18"></a>
 Authors</h1>
@@ -113,16 +113,14 @@ Authors</h1>
 <h1><a class="anchor" id="autotoc_md19"></a>
 Acknowledgments</h1>
 <p>The authors would like to thank the support of the projects M-RoCk (Grant No.: FKZ 01IW21002), AAPLE (Grant Number: 50WK2275) and COOPERANTS (Grant No.: 68GX21003H). Further many thanks to the University of Lübeck and especially the <a href="https://www.ime.uni-luebeck.de/institute">Institute for Electrical Engineering in Medicine</a>, the <a href="https://robotik.dfki-bremen.de/en/research/research-facilities-labs/underactuated-lab">Underactuated Robotics Lab</a> and <a href="https://technology.esa.int/lab/automation-and-robotics-laboratories">European Space Agencies Orbital Robotics Lab</a> for the collaboration.</p>
-<p><img src="media/Logo_Uni_Luebeck_1200dpi.png" alt="" width="200" class="inline"/> <br  />
- <img src="media/Logo_Underactuated_Lab.gif" alt="" width="200" class="inline"/> <br  />
- <img src="media/ESA_logo_2020_Deep.png" alt="" width="200" class="inline"/></p>
+<p><img src="media/Logo_Uni_Luebeck_1200dpi.png" alt="" width="200" border="25 solid transparent" class="inline"/> <img src="media/Logo_Underactuated_Lab.gif" alt="" width="200" border="37 solid transparent" class="inline"/> <img src="media/ESA_logo_2020_Deep.png" alt="" width="200" class="inline"/></p>
 <h1><a class="anchor" id="autotoc_md20"></a>
 License</h1>
 <p>This work has been released under the BSD 3-Clause License. Details and terms of use are specified in the LICENSE file within this repository. Note that we do not publish third-party software, hence software packages from other developers are released under their very own terms and conditions, e.g. Stable baselines (MIT License) and Tensorflow (Apache License v2.0). If you install third-party software packages along with this repo ensure that you follow each individual license agreement.</p>
 <h1><a class="anchor" id="autotoc_md21"></a>
 Citation</h1>
 <p>Please cite one of the following works:</p>
-<p>[1] F. Stark, S. Vyas, G. Schildbach, and F. Kirchner, “Mixed Integer Model Predictive Control for a free-floating platform with binary and continuous actuation,” in Procceding of CEAS Conference on Guidance, Navigation and Control 2024 (EuroGNC 2024), Bristol, 2024. </p><div class="fragment"><div class="line">@inproceedings{stark_mixed_2024,</div>
+<p>[1] F. Stark, S. Vyas, G. Schildbach, and F. Kirchner, “Mixed Integer Model Predictive Control for a free-floating platform with binary and continuous actuation,” in Proceeding of CEAS Conference on Guidance, Navigation and Control 2024 (EuroGNC 2024), Bristol, 2024. </p><div class="fragment"><div class="line">@inproceedings{stark_mixed_2024,</div>
 <div class="line">    address = {Bristol},</div>
 <div class="line">    title = {Mixed {Integer} {Model} {Predictive} {Control} for a free-floating platform with binary and continuous actuation},</div>
 <div class="line">    volume = {2024},</div>
