@@ -70,8 +70,17 @@ This work has been released under the BSD 3-Clause License. Details and terms of
 
 ## Citation
 Please cite one of the following works:
+[1] F. Stark, S. Vyas, G. Schildbach, and F. Kirchner, “Mixed Integer Model Predictive Control for a free-floating platform with binary and continuous actuation,” in Procceding of CEAS Conference on Guidance, Navigation and Control 2024 (EuroGNC 2024), Bristol, 2024.
+```
+@inproceedings{stark_mixed_2024,
+	address = {Bristol},
+	title = {Mixed {Integer} {Model} {Predictive} {Control} for a free-floating platform with binary and continuous actuation},
+	volume = {2024},
+	year = {2024},
+}
+```
 
-[1] F. Stark, S. Vyas, G. Schildbach, and F. Kirchner, “Linear Model Predictive Control for a planar free-floating platform: A comparison of binary input constraint formulations,” in Proccedings of 17th Symposium on Advanced Space Technologies in Robotics and Automation, Oct. 2023. doi: [10.48550/arXiv.2312.10788.](https://arxiv.org/abs/2312.10788)
+[2] F. Stark, S. Vyas, G. Schildbach, and F. Kirchner, “Linear Model Predictive Control for a planar free-floating platform: A comparison of binary input constraint formulations,” in Proccedings of 17th Symposium on Advanced Space Technologies in Robotics and Automation, Oct. 2023. doi: [10.48550/arXiv.2312.10788.](https://arxiv.org/abs/2312.10788)
 ```
 @inproceedings{stark_linear_2023,
 	title = {Linear {Model} {Predictive} {Control} for a planar free-floating platform: {A} comparison of binary input constraint formulations},
@@ -84,7 +93,7 @@ Please cite one of the following works:
 	year = {2023},
 }
 ```
-[2] F. Stark, “Model Predictive Control for 3-dof free floating platform with binary actuated thrusters and reaction wheel,” Master Thesis, Univerität zu Lübeck, Lübeck, Germany, 2023.
+[3] F. Stark, “Model Predictive Control for 3-dof free floating platform with binary actuated thrusters and reaction wheel,” Master Thesis, Univerität zu Lübeck, Lübeck, Germany, 2023.
 ```
 @mastersthesis{stark_model_2023,
 	address = {Lübeck, Germany},
