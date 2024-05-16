@@ -4,20 +4,18 @@ _A fast typesafe Mixed Integer Model Predictive Control C++ library_
 ![](media/mpc_letter.gif)
 
 ## Description
-Full documentation under: [Documentation](https://dfki-ric-underactuated-lab.github.io/mimpc/)
-
 The library was originally developed as a fast implementation
 of an MPC for European Space Agency's [free-floating platform REACSA](https://www.researchgate.net/profile/Gunter-Just/publication/374631799_REACSA_Actuated_Floating_Platform_for_Orbital_Robotic_Concept_Testing_and_Control_Software_Development/links/6527d23161c4044c404e6c7d/REACSA-Actuated-Floating-Platform-for-Orbital-Robotic-Concept-Testing-and-Control-Software-Development.pdf)
 which is controlled by a continuous actuated Reaction Wheel and eight binary actuated thrusters under dwell time constraints.
 
 
 This project contains:
-1. The MIMPC __library__ that has been designed to provide a fast MPC for any system that combines continuous and binary actuators under dwell time constraints.
+1. A MIMPC __library__ that has been designed to provide a fast MPC for any system that combines continuous and binary actuators under dwell time constraints.
 2. A __Simulator__ that provides a simulation based on [Drake toolbox](https://drake.mit.edu/) that simulates the [free-floating platform REACSA](https://www.researchgate.net/profile/Gunter-Just/publication/374631799_REACSA_Actuated_Floating_Platform_for_Orbital_Robotic_Concept_Testing_and_Control_Software_Development/links/6527d23161c4044c404e6c7d/REACSA-Actuated-Floating-Platform-for-Orbital-Robotic-Concept-Testing-and-Control-Software-Development.pdf) controlled by the MPC.
 3. __Example__ code [(examples/)](../examples/esa_reacsa/main.cpp) that shows how to use the library together with the simulator.
 
 ## Documentation
-Full documentation under: [Documentation](https://dfki-ric-underactuated-lab.github.io/mimpc/)
+Full documentation under: [Documentation & Code-API](https://dfki-ric-underactuated-lab.github.io/mimpc/)
 ### Installation
 Please refer to the [installation instructions](INSTALL.md). 
 For simple use a [Dockerfile](Dockerfile) is available. To build and run the container simply run:
@@ -38,17 +36,19 @@ docker run -it --network="host" mimpc
 #### Run examples
 When the simulation and examples have been built, run ```./build/reacsamimpc``` within the repos root folder.
 It starts a few tests with the simulated [free-floating platform REACSA](https://www.researchgate.net/profile/Gunter-Just/publication/374631799_REACSA_Actuated_Floating_Platform_for_Orbital_Robotic_Concept_Testing_and_Control_Software_Development/links/6527d23161c4044c404e6c7d/REACSA-Actuated-Floating-Platform-for-Orbital-Robotic-Concept-Testing-and-Control-Software-Development.pdf) and safes the results.
-The simulation creates a visualisation that can be rendered by opening (http://localhost:7000) in any browser.
+The simulation creates a visualization that can be rendered by opening (http://localhost:7000) in any browser.
 
 
 #### Use the library
-To get a fully working MIMPC for your own system the system dynamics have to be specified by deriving from @ref mimpc::System.
-The library provides next to @ref mimpc::System two main interfaces:
-- @ref mimpc::Solver is the low level interface in which the dwell time constraints, the cost function and the system constraints can be specified. 
+(Full documentation under: [Documentation & Code-API](https://dfki-ric-underactuated-lab.github.io/mimpc/))
+
+To get a fully working MIMPC for your own system the system dynamics have to be specified by deriving from mimpc::System.
+The library provides next to mimpc::System two main interfaces:
+- mimpc::Solver is the low level interface in which the dwell time constraints, the cost function and the system constraints can be specified. 
 It also provides the functionality to set the current state, solve the problem and retrieve the optimal solution. 
-Currently, the library with @ref mimpc::SCIPSolver only contains one Solver which implements this lowe level interface. It is based on the open source SCIP solver (https://scipopt.org/).
-To integrate your favourite solver, derive from @ref mimpc::Solver
-- @ref mimpc::MPC is the high level interface which warps a configured mimpc::Solver implementation and wraps the typical MPC control loop into a simpler interface.
+Currently, the library with mimpc::SCIPSolver only contains one Solver that implements this low-level interface. It is based on the open-source SCIP solver (https://scipopt.org/).
+To integrate your favorite solver, derive from mimpc::Solver
+- mimpc::MPC is the high-level interface that warps a configured mimpc::Solver implementation and wraps the typical MPC control loop into a simpler interface.
 
 ## Authors
 - [Franek Stark](https://robotik.dfki-bremen.de/de/ueber-uns/mitarbeiter/person/frst03) ([@FranekStark](https://github.com/FranekStark))
@@ -59,10 +59,8 @@ Feel free to contact us if you have questions about the library or examples. Enj
 The authors would like to thank the support of the projects M-RoCk (Grant No.: FKZ 01IW21002), AAPLE (Grant Number: 50WK2275) and COOPERANTS (Grant No.: 68GX21003H).
 Further many thanks to the University of Lübeck and especially the [Institute for Electrical Engineering in Medicine](https://www.ime.uni-luebeck.de/institute), the [Underactuated Robotics Lab](https://robotik.dfki-bremen.de/en/research/research-facilities-labs/underactuated-lab) and [European Space Agencies Orbital Robotics Lab](https://technology.esa.int/lab/automation-and-robotics-laboratories) for the collaboration.
 
-<img src="media/Logo_Uni_Luebeck_1200dpi.png" width="200" />
-<br/>
-<img src="media/Logo_Underactuated_Lab.gif" width="200"/>
-<br/>
+<img src="media/Logo_Uni_Luebeck_1200dpi.png" width="200" border="25 solid transparent" />
+<img src="media/Logo_Underactuated_Lab.gif" width="200" border="37 solid transparent"/>
 <img src="media/ESA_logo_2020_Deep.png" width="200"/>
 
 ## License
@@ -71,7 +69,7 @@ This work has been released under the BSD 3-Clause License. Details and terms of
 ## Citation
 Please cite one of the following works:
 
-[1] F. Stark, S. Vyas, G. Schildbach, and F. Kirchner, “Mixed Integer Model Predictive Control for a free-floating platform with binary and continuous actuation,” in Procceding of CEAS Conference on Guidance, Navigation and Control 2024 (EuroGNC 2024), Bristol, 2024.
+[1] F. Stark, S. Vyas, G. Schildbach, and F. Kirchner, “Mixed Integer Model Predictive Control for a free-floating platform with binary and continuous actuation,” in Proceeding of CEAS Conference on Guidance, Navigation and Control 2024 (EuroGNC 2024), Bristol, 2024.
 ```
 @inproceedings{stark_mixed_2024,
 	address = {Bristol},
