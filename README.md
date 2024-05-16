@@ -4,7 +4,7 @@ _A fast typesafe Mixed Integer Model Predictive Control C++ library_
 ![](media/mpc_letter.gif)
 
 ## Description
-Full Documentation under: TODO put the link of the generated Doxygen files here
+Full documentation under: [Documentation](https://dfki-ric-underactuated-lab.github.io/mimpc/)
 
 The library was originally developed as a fast implementation
 of an MPC for European Space Agency's [free-floating platform REACSA](https://www.researchgate.net/profile/Gunter-Just/publication/374631799_REACSA_Actuated_Floating_Platform_for_Orbital_Robotic_Concept_Testing_and_Control_Software_Development/links/6527d23161c4044c404e6c7d/REACSA-Actuated-Floating-Platform-for-Orbital-Robotic-Concept-Testing-and-Control-Software-Development.pdf)
@@ -17,7 +17,7 @@ This project contains:
 3. __Example__ code [(examples/)](../examples/esa_reacsa/main.cpp) that shows how to use the library together with the simulator.
 
 ## Documentation
-Full Documentation under: TODO put the link of the generated Doxygen files here
+Full documentation under: [Documentation](https://dfki-ric-underactuated-lab.github.io/mimpc/)
 ### Installation
 Please refer to the [installation instructions](INSTALL.md). 
 For simple use a [Dockerfile](Dockerfile) is available. To build and run the container simply run:
