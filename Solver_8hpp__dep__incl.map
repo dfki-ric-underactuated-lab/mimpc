@@ -1,0 +1,7 @@
+<map id="include/Solver.hpp" name="include/Solver.hpp">
+<area shape="rect" id="node1" title="Abstract class that represents any solver interface and provides a low&#45;lever mpc solver interface." alt="" coords="229,5,371,32"/>
+<area shape="rect" id="node2" href="$MPC_8hpp_source.html" title=" " alt="" coords="135,80,265,107"/>
+<area shape="rect" id="node5" href="$SCIPSolver_8hpp_source.html" title=" " alt="" coords="289,80,511,107"/>
+<area shape="rect" id="node3" href="$MPCLeafSystem_8hpp_source.html" title=" " alt="" coords="5,155,240,181"/>
+<area shape="rect" id="node4" href="$Simulation_8hpp_source.html" title=" " alt="" coords="101,229,299,256"/>
+</map>
