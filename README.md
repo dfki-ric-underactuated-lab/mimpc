@@ -77,6 +77,7 @@ Please cite one of the following works:
 	address = {Bristol},
 	title = {Mixed {Integer} {Model} {Predictive} {Control} for a free-floating platform with binary and continuous actuation},
 	volume = {2024},
+	author = {Stark, Franek and Vyas, Shubham and Schildbach, Georg and Kirchner, Frank},
 	year = {2024},
 }
 ```
