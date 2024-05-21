@@ -12,7 +12,7 @@ which is controlled by a continuous actuated Reaction Wheel and eight binary act
 This project contains:
 1. A MIMPC __library__ that has been designed to provide a fast MPC for any system that combines continuous and binary actuators under dwell time constraints.
 2. A __Simulator__ that provides a simulation based on [Drake toolbox](https://drake.mit.edu/) that simulates the [free-floating platform REACSA](https://www.researchgate.net/profile/Gunter-Just/publication/374631799_REACSA_Actuated_Floating_Platform_for_Orbital_Robotic_Concept_Testing_and_Control_Software_Development/links/6527d23161c4044c404e6c7d/REACSA-Actuated-Floating-Platform-for-Orbital-Robotic-Concept-Testing-and-Control-Software-Development.pdf) controlled by the MPC.
-3. __Example__ code [(examples/)](../examples/esa_reacsa/main.cpp) that shows how to use the library together with the simulator.
+3. __Example__ code [(examples/)](examples/esa_reacsa/main.cpp) that shows how to use the library together with the simulator.
 
 ## Documentation
 Full documentation under: [Documentation & Code-API](https://dfki-ric-underactuated-lab.github.io/mimpc/)
