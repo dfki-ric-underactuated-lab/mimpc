@@ -69,14 +69,16 @@ This work has been released under the BSD 3-Clause License. Details and terms of
 ## Citation
 Please cite one of the following works:
 
-[1] F. Stark, S. Vyas, G. Schildbach, and F. Kirchner, “Mixed Integer Model Predictive Control for a free-floating platform with binary and continuous actuation,” in Proceeding of CEAS Conference on Guidance, Navigation and Control 2024 (EuroGNC 2024), Bristol, 2024.
+[1] F. Stark, S. Vyas, G. Schildbach, and F. Kirchner, “Mixed Integer Model Predictive Control for a free-floating platform with binary and continuous actuation,” in Proceeding of CEAS Conference on Guidance, Navigation and Control 2024 (EuroGNC 2024), Bristol, 2024. url: [CEAS-GNC-2024-013](https://eurognc.ceas.org/archive/EuroGNC2024/pdf/CEAS-GNC-2024-013.pdf)
 ```
 @inproceedings{stark_mixed_2024,
-	address = {Bristol},
-	title = {Mixed {Integer} {Model} {Predictive} {Control} for a free-floating platform with binary and continuous actuation},
-	volume = {2024},
-	author = {Stark, Franek and Vyas, Shubham and Schildbach, Georg and Kirchner, Frank},
-	year = {2024},
+    authors = {Stark, Franek and Vyas, Shubham and Schildbach, Georg and Kirchner, Frank},
+    title = {Mixed Integer Model Predictive Control for a free-floating platform with binary and continuous actuation},
+    booktitle = {Proceedings of the 2024 {CEAS EuroGNC} conference},
+    address = {Bristol, UK},
+    month = jun,
+    year = {2024},
+    note = {CEAS-GNC-2024-013}
 }
 ```
 
