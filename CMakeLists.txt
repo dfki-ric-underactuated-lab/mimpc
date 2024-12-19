@@ -69,7 +69,15 @@ if(BuildExamples)
    target_link_libraries(reacsamimpc mimpclibsim)
    target_include_directories(reacsamimpc PUBLIC ${SCIP_INCLUDE_DIRS})
    target_include_directories(reacsamimpc PUBLIC include)
+
+   message("Building generate problem instances content")
+   add_executable(gen_instances examples/esa_reacsa/generate_samples.cpp)
+   target_link_libraries(gen_instances mimpclibsim)
+   target_include_directories(gen_instances PUBLIC ${SCIP_INCLUDE_DIRS})
+   target_include_directories(gen_instances PUBLIC include)
 endif()
+
+
 
 INSTALL(TARGETS mimpclib EXPORT mimpclib
         # for executables and dll on Win
