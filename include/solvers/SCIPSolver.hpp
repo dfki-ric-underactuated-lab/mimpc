@@ -113,6 +113,8 @@ namespace mimpc {
                       N + 1, Eigen::RowMajor> &open_loop_state) const override;
 
         unsigned int getStepsToCompensateControllerDelay() override;
+
+        void writeProblemToFile(const std::string & file_path);
     };
 };
 
