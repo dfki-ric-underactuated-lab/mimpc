@@ -31,7 +31,11 @@ namespace mimpc {
         /**
         * Solver was interrupted by user (i.e. by pressing CTRL+C while solver was running)
         */
-        USER_INTERRUPT = -10
+        USER_INTERRUPT = -10,
+        /**
+         * Problem is infeasible
+         */
+        INFEASIBLE = -1
     };
 
 /**
@@ -222,6 +226,6 @@ namespace mimpc {
         solve(const Eigen::Matrix<double, SystemType::NUM_INPUTS, N, Eigen::RowMajor> &last_open_loop_input,
               const Eigen::Matrix<double, SystemType::NUM_STATES, N + 1, Eigen::RowMajor> &last_open_loop_state,
               Eigen::Matrix<double, SystemType::NUM_INPUTS, N, Eigen::RowMajor> &open_loop_input,
-              Eigen::Matrix<double, SystemType::NUM_STATES, N + 1, Eigen::RowMajor> &open_loop_state) const = 0;
+              Eigen::Matrix<double, SystemType::NUM_STATES, N + 1, Eigen::RowMajor> &open_loop_state, double & obj_value) const = 0;
     };
 };

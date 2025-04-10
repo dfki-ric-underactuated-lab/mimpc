@@ -14,7 +14,7 @@ using namespace mimpc::systems;
 
 void do_sim(REACSA::StateVec & state_weight, REACSA::StateVec & state_final_weight, REACSA::InputVec & input_weight, std::string & name, REACSA::StateVec init_state = {1.0, -0.5, M_PI, 0.0, 0.1, 0, 0}) {
     std::cout << "Do sim: " << name << std::endl;
-    static constexpr unsigned int N = 20;
+    static constexpr unsigned int N = 25;
     double rw_bound = 150.0 * reacsa_constants::RPM_2_RADPS;
     unsigned int num_break_trusts = 1;
 
@@ -90,7 +90,7 @@ void do_sim(REACSA::StateVec & state_weight, REACSA::StateVec & state_final_weig
     for (unsigned int k = 0; k < REACSA::NUM_STATES; k++){
         solver.addStateConstraintOnIndex(k, state_const_lb(k), state_const_ub(k));
     }
-    solver.setSolverTimeLimit(0.1);
+    solver.setSolverTimeLimit(1.0);
     solver.addStateConstraintOnStep(N, state_final_lb,
                                     state_final_ub);
     MPC<REACSA, decltype(solver)> mpc(solver);

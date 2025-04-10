@@ -40,7 +40,8 @@ namespace mimpc {
             solver_.setNextInputs(history_.template rightCols<SolverType::NUM_STEPS_SOLVER_DELAY>());
         }
         std::chrono::steady_clock::time_point set_bin_hist = std::chrono::steady_clock::now();
-        SOLVER_RETURN result = solver_.solve(last_u_, last_x_, last_u_, last_x_);
+        double obj_value;
+        SOLVER_RETURN result = solver_.solve(last_u_, last_x_, last_u_, last_x_, obj_value);
         std::chrono::steady_clock::time_point solve = std::chrono::steady_clock::now();
 
         long int solve_time = std::chrono::duration_cast<std::chrono::milliseconds>(solve - set_bin_hist).count();
@@ -66,9 +67,10 @@ namespace mimpc {
                 stats += "Solver was early stopped! Feasible but NO ";
                 [[fallthrough]];
             case OPTIMAL:
-                stats += "OPTIMAL Solution found and proven.";
-                break;
-            case NO_SOLUTION:
+                stats += "OPTIMAL Solution found and proven. ";
+                stats += fmt::format("Best solution found by {} on node {}.", solver_.getSCIPInfos().sol_found_by, solver_.getSCIPInfos().sol_node_n);
+                break; 
+            default:
                 stats += "NO Solution found, going to use old solutions as long as possible. Otherwise zero output!";
                 for (unsigned int n = 0; n < (SolverType::PRED_STEPS - 1); n++) {
                     last_u_.col(n) = last_u_.col(n + 1);

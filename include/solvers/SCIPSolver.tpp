@@ -2,6 +2,7 @@
 
 #include "SCIPSolver.hpp"
 #include <fmt/format.h>
+#include <iostream>
 
 #define SCIP(x)            {SCIP_RETCODE _restat_ = x; /*lint -e{506,774}*/                                         \
                           if(_restat_ != SCIP_OKAY )                                                 \
@@ -22,6 +23,7 @@ namespace mimpc {
             cost_type_(cost_type),
             system_(system),
             system_dt_(system_dt),
+            state_(decltype(state_)::Zero()),
             state_cost_weights_(state_weights),
             final_state_cost_weights_(final_weights),
             input_cost_weights_(input_weights),
@@ -36,7 +38,7 @@ namespace mimpc {
         for (unsigned int n = 0; n < (N + 1); n++) {
             for (unsigned int k = 0; k < SystemType::NUM_STATES; k++) {
                 SCIP(SCIPcreateVarBasic(scip_problem_, &(scip_state_vars_[k][n]),
-                                        fmt::format("state[{},{}]", k, n).c_str(),
+                                        fmt::format("state({},{})", k, n).c_str(),
                                         -SCIPinfinity(scip_problem_), +SCIPinfinity(scip_problem_), 0.0,
                                         SCIP_Vartype::SCIP_VARTYPE_CONTINUOUS));
                 SCIP(SCIPaddVar(scip_problem_, (scip_state_vars_[k][n])));
@@ -46,14 +48,14 @@ namespace mimpc {
         for (unsigned int n = 0; n < N; n++) {
             for (unsigned int k = 0; k < SystemType::NUM_CONT_INPUTS; k++) {
                 SCIP(SCIPcreateVarBasic(scip_problem_, &(scip_input_vars_[k][n]),
-                                        fmt::format("input[{},{}]", k, n).c_str(),
+                                        fmt::format("input({},{})", k, n).c_str(),
                                         -SCIPinfinity(scip_problem_), +SCIPinfinity(scip_problem_), 0.0,
                                         SCIP_Vartype::SCIP_VARTYPE_CONTINUOUS));
                 SCIP(SCIPaddVar(scip_problem_, scip_input_vars_[k][n]));
             }
             for (unsigned int k = SystemType::NUM_CONT_INPUTS; k < (SystemType::NUM_INPUTS); k++) {
                 SCIP(SCIPcreateVarBasic(scip_problem_, &(scip_input_vars_[k][n]),
-                                        fmt::format("input[{},{}]", k, n).c_str(),
+                                        fmt::format("input({},{})", k, n).c_str(),
                                         0, 1, 0, SCIP_Vartype::SCIP_VARTYPE_BINARY));
                 SCIP(SCIPaddVar(scip_problem_, scip_input_vars_[k][n]));
             }
@@ -92,7 +94,7 @@ namespace mimpc {
                     //create the actual constraint
                     SCIP(SCIPcreateConsBasicLinear(scip_problem_,
                                                    &(scip_dynamic_const_[n][m_row]),
-                                                   fmt::format("dynamic_cons[{},{}]", n, m_row).c_str(),
+                                                   fmt::format("dynamic_cons({},{})", n, m_row).c_str(),
                                                    1 + SystemType::NUM_STATES + (SystemType::NUM_INPUTS),
                                                    vars.data(), coefs.data(), 0, 0));
                     SCIP(SCIPaddCons(scip_problem_,
@@ -131,7 +133,7 @@ namespace mimpc {
                     //create the actual constraint
                     SCIP(SCIPcreateConsBasicLinear(scip_problem_,
                                                    &(scip_dynamic_const_[n][m_row]),
-                                                   fmt::format("dynamic_cons[{},{}]", n, m_row).c_str(),
+                                                   fmt::format("dynamic_cons({},{})", n, m_row).c_str(),
                                                    1 + SystemType::NUM_STATES + (SystemType::NUM_INPUTS),
                                                    vars.data(), coefs.data(), 0, 0));
                     SCIP(SCIPaddCons(scip_problem_,
@@ -155,10 +157,16 @@ namespace mimpc {
             for (unsigned int k = SystemType::NUM_CONT_INPUTS; k < (SystemType::NUM_INPUTS); k++) {
                 auto var_start_indx = std::max(0, n);
                 auto var_end_indx = n + max_steps_on + 1;
+                std::string n_name = "";
+                if(n < 0){
+                    n_name = fmt::format("neg{}",-n);
+                }else{
+                    n_name = fmt::format("{}",n);
+                }
                 SCIP(SCIPcreateConsBasicLinear(scip_problem_,
                                                &(scip_pattern_timing_max_const_[k - SystemType::NUM_CONT_INPUTS][n +
                                                                                                                  SolverBase::history_depth]),
-                                               fmt::format("pattern_timing_max_const[{}{}]", k, n).c_str(),
+                                               fmt::format("pattern_timing_max_const({},{})", k, n_name).c_str(),
                                                var_end_indx - var_start_indx,
                                                &(scip_input_vars_[k][var_start_indx]),
                                                ones.data(),
@@ -203,12 +211,17 @@ namespace mimpc {
                         vars = &(scip_input_vars_[k][n - 1]);
                         break;
                 }
-
+                std::string n_name = "";
+                if(n < 0){
+                    n_name = fmt::format("neg{}",-n);
+                }else{
+                    n_name = fmt::format("{}",n);
+                }
 
                 SCIP(SCIPcreateConsBasicLinear(scip_problem_,
                                                &(scip_pattern_timing_min_const_[k - SystemType::NUM_CONT_INPUTS][n +
                                                                                                                  1]),
-                                               fmt::format("pattern_timing_min_constraint[{},{}]", k, n).c_str(),
+                                               fmt::format("pattern_timing_min_constraint({},{})", k, n_name).c_str(),
                                                num_vars,
                                                vars,
                                                coeff,
@@ -362,7 +375,7 @@ namespace mimpc {
                         SCIP(SCIPcreateVarBasic(
                                 scip_problem_,
                                 &(scip_T_state_[k][n]),
-                                fmt::format("T_state[{},{}]", k, n).c_str(),
+                                fmt::format("T_state({},{})", k, n).c_str(),
                                 0,
                                 SCIPinfinity(scip_problem_),
                                 weight,
@@ -396,7 +409,7 @@ namespace mimpc {
                         SCIP(SCIPcreateConsBasicLinear(
                                 scip_problem_,
                                 &(scip_Tconsp_state_[k][n]),
-                                fmt::format("scip_Tstaconsp[{},{}]", k, n).c_str(),
+                                fmt::format("scip_Tstaconsp({},{})", k, n).c_str(),
                                 2,
                                 vars.data(),
                                 coefs1.data(),
@@ -407,7 +420,7 @@ namespace mimpc {
                         SCIP(SCIPcreateConsBasicLinear(
                                 scip_problem_,
                                 &(scip_Tconsm_state_[k][n]),
-                                fmt::format("scip_Tstaconsm[{},{}]", k, n).c_str(),
+                                fmt::format("scip_Tstaconsm({},{})", k, n).c_str(),
                                 2,
                                 vars.data(),
                                 coefs2.data(),
@@ -424,7 +437,7 @@ namespace mimpc {
                         SCIP(SCIPcreateVarBasic(
                                 scip_problem_,
                                 &(scip_T_input_[k][n]),
-                                fmt::format("T_input[{},{}]", k, n).c_str(),
+                                fmt::format("T_input({},{})", k, n).c_str(),
                                 0,
                                 SCIPinfinity(scip_problem_),
                                 weight,
@@ -437,7 +450,7 @@ namespace mimpc {
                         SCIP(SCIPcreateConsBasicLinear(
                                 scip_problem_,
                                 &(scip_Tconsp_input_[k][n]),
-                                fmt::format("scip_Tinconsp[{},{}]", k, n).c_str(),
+                                fmt::format("scip_Tinconsp({},{})", k, n).c_str(),
                                 2,
                                 vars.data(),
                                 coefs1.data(),
@@ -449,7 +462,7 @@ namespace mimpc {
                         SCIP(SCIPcreateConsBasicLinear(
                                 scip_problem_,
                                 &(scip_Tconsm_input_[k][n]),
-                                fmt::format("scip_Tinconsm[{},{}]", k, n).c_str(),
+                                fmt::format("scip_Tinconsm({},{})", k, n).c_str(),
                                 2,
                                 vars.data(),
                                 coefs2.data(),
@@ -469,7 +482,7 @@ namespace mimpc {
                         SCIP(SCIPcreateVarBasic(
                                 scip_problem_,
                                 &(scip_QuadCostErr_states_[k][n]),
-                                fmt::format("scip_QuadCostErr_states_[{},{}]", k, n).c_str(),
+                                fmt::format("scip_QuadCostErr_states_({},{})", k, n).c_str(),
                                 -SCIPinfinity(scip_problem_),
                                 SCIPinfinity(scip_problem_),
                                 0,
@@ -481,7 +494,7 @@ namespace mimpc {
                         SCIP(SCIPcreateConsBasicLinear(
                                 scip_problem_,
                                 &(scip_QuadCostErrCons_states_[k][n]),
-                                fmt::format("scip_QuadCostErrCons_input_[{},{}]", k, n).c_str(),
+                                fmt::format("scip_QuadCostErrCons_input_({},{})", k, n).c_str(),
                                 2,
                                 vars.data(),
                                 coefs.data(),
@@ -707,8 +720,17 @@ namespace mimpc {
     std::derived_from<SystemType, System<SystemType::NUM_STATES, SystemType::NUM_CONT_INPUTS, SystemType::NUM_BIN_INPUTS>>
     void
     SCIPSolver<SystemType, N, min_steps_on, min_steps_off, max_steps_on, num_steps_solver_delay, integration_scheme>::writeProblemToFile(const std::string & file_path) {
-        SCIPwriteOrigProblem(scip_problem_, file_path.c_str(), NULL, true);
+        SCIPwriteOrigProblem(scip_problem_, file_path.c_str(), NULL, false);
     }
+
+    template<class SystemType, int N, int min_steps_on, int min_steps_off, int max_steps_on, int num_steps_solver_delay, INTEGRATION_SCHEME integration_scheme>
+    requires
+    std::derived_from<SystemType, System<SystemType::NUM_STATES, SystemType::NUM_CONT_INPUTS, SystemType::NUM_BIN_INPUTS>>
+    void
+    SCIPSolver<SystemType, N, min_steps_on, min_steps_off, max_steps_on, num_steps_solver_delay, integration_scheme>::setProblemName(const std::string & name) {
+        SCIPsetProbName(scip_problem_, name.c_str());
+    }
+    
 
     template<class SystemType, int N, int min_steps_on, int min_steps_off, int max_steps_on, int num_steps_solver_delay, INTEGRATION_SCHEME integration_scheme>
     requires
@@ -771,7 +793,7 @@ namespace mimpc {
             const typename Eigen::Matrix<double, SystemType::NUM_INPUTS, N, Eigen::RowMajor> &last_open_loop_input,
             const typename Eigen::Matrix<double, SystemType::NUM_STATES, N + 1, Eigen::RowMajor> &last_open_loop_state,
             typename Eigen::Matrix<double, SystemType::NUM_INPUTS, N, Eigen::RowMajor> &open_loop_input,
-            typename Eigen::Matrix<double, SystemType::NUM_STATES, N + 1, Eigen::RowMajor> &open_loop_state) const {
+            typename Eigen::Matrix<double, SystemType::NUM_STATES, N + 1, Eigen::RowMajor> &open_loop_state, double & obj_value) const {
 
         //TODO: measure time for statistics
 
@@ -798,25 +820,32 @@ namespace mimpc {
         //SCIP(SCIPaddSolFree(scip_problem_, &scip_init_guess, reinterpret_cast<unsigned int *>(&accepted)));
         // TODO: shift solution and check if it actually worked here
         (void) (accepted);
-
-        SCIP(SCIPsolve(scip_problem_));
+        /////TOD0: activate:
+        //SCIP( SCIPsetIntParam(scip_problem_, "presolving/maxrounds", 0) );
+        //SCIP( SCIPsetHeuristics(scip_problem_, SCIP_PARAMSETTING_OFF, TRUE) );
+        
+        /////end
+        SCIP( SCIPsolve(scip_problem_));
         auto solution_status = SCIPgetStatus(scip_problem_);
         auto n_sols = SCIPgetNSols(scip_problem_);
         SOLVER_RETURN result;
-        if(solution_status == SCIP_STATUS_USERINTERRUPT){
-          result = USER_INTERRUPT;
+        if(solution_status == SCIP_STATUS_USERINTERRUPT) {
+            result = USER_INTERRUPT;
+        } else if(solution_status == SCIP_STATUS_INFEASIBLE){
+            result = INFEASIBLE;
         } else if (solution_status == SCIP_STATUS_OPTIMAL) {
             result = OPTIMAL;
         } else if (n_sols >= 1) {
-          result = TIME_LIMIT_WITH_SOLUTION; // TODO: simplifies other termination resons to time limit
+            result = TIME_LIMIT_WITH_SOLUTION; // TODO: simplifies other termination resons to time limit
         } else {
             result = NO_SOLUTION;
         }
         //SCIP(SCIPsolveConcurrent(scip_problem_));
 
         //TODO: check, if memory was acclocated previouously correct
-        if (result != NO_SOLUTION) {
+        if (result == OPTIMAL || result == TIME_LIMIT_WITH_SOLUTION) {
             SCIP_SOL *best_solution = SCIPgetBestSol(scip_problem_);
+            //TODO::: HERE might be the problem!!!!!
 
 
             for (unsigned int k = 0; k < (SystemType::NUM_INPUTS); k++) {
@@ -842,10 +871,53 @@ namespace mimpc {
 //            ));
             }
 
+            obj_value = SCIPgetSolOrigObj(scip_problem_, best_solution);
+            infos_.sol_time = SCIPsolGetTime(best_solution);
+            infos_.sol_node_n = SCIPsolGetNodenum(best_solution);
+            infos_.sol_depth = SCIPsolGetDepth(best_solution);
+            auto sol_type = SCIPsolGetType(best_solution);
+            switch(sol_type) {
+                case SCIP_SOLTYPE_UNKNOWN:
+                    infos_.sol_found_by = "unkown";
+                    break;
 
+                case SCIP_SOLTYPE_HEUR:
+                    infos_.sol_found_by = "heuristic - " + std::string(SCIPsolGetHeur(best_solution)->name);
+                    break;
+
+                case SCIP_SOLTYPE_RELAX:
+                    infos_.sol_found_by = "relaxation";
+                    break;
+                    
+                case SCIP_SOLTYPE_LPRELAX:
+                    infos_.sol_found_by = "LP relaxation";
+                    break;
+                    
+                case SCIP_SOLTYPE_STRONGBRANCH:
+                    infos_.sol_found_by = "strong branching";
+                    break;
+                    
+                case SCIP_SOLTYPE_PSEUDO:
+                    infos_.sol_found_by = "pseudo solution";
+                    break;             
+            }
         }
+
+        infos_.nodes_processed = SCIPgetNNodes(scip_problem_);
+        //SCIPprintStatistics(scip_problem_, NULL);
+
         SCIP(SCIPfreeTransform(scip_problem_));
 
         return result;
     }
+
+
+    template<class SystemType, int N, int min_steps_on, int min_steps_off, int max_steps_on, int num_steps_solver_delay, INTEGRATION_SCHEME integration_scheme>
+    requires
+    std::derived_from<SystemType, System<SystemType::NUM_STATES, SystemType::NUM_CONT_INPUTS, SystemType::NUM_BIN_INPUTS>>
+    const SCIPSolver<SystemType, N, min_steps_on, min_steps_off, max_steps_on, num_steps_solver_delay, integration_scheme>::Info &
+    SCIPSolver<SystemType, N, min_steps_on, min_steps_off, max_steps_on, num_steps_solver_delay, integration_scheme>::getSCIPInfos() const {
+        return infos_;
+    }
+
 };

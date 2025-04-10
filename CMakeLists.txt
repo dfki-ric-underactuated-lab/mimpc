@@ -4,9 +4,14 @@ project(mimpc)
 option(BuildSim "BuildSim" ON)
 option(BuildExamples "BuildExamples" ON)
 
-if(NOT CMAKE_BUILD_TYPE)
-   set(CMAKE_BUILD_TYPE Release)
-endif()
+# Add AddressSanitizer and UndefinedBehaviorSanitizer flags
+#set(SANITIZER_FLAGS "-fsanitize=address,undefined -fno-omit-frame-pointer")
+
+# Add the flags to the compiler
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SANITIZER_FLAGS}")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SANITIZER_FLAGS}")
+
+set(CMAKE_BUILD_TYPE Release)
 
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")

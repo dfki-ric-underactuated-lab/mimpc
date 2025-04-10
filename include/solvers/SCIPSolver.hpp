@@ -2,6 +2,7 @@
 
 #include <scip/scip.h>
 #include <scip/scipdefplugins.h>
+#include <scip/struct_heur.h>
 #include <array>
 #include <type_traits>
 #include <concepts>
@@ -19,8 +20,16 @@ namespace mimpc {
             : public Solver<SystemType, N, min_steps_on, min_steps_off, max_steps_on, num_steps_solver_delay, integration_scheme> {
     public:
         using SolverBase = Solver<SystemType, N, min_steps_on, min_steps_off, max_steps_on, num_steps_solver_delay, integration_scheme>;
+        struct Info {
+                long int nodes_processed;
+                double sol_time;
+                double sol_node_n;
+                double sol_depth;
+                std::string sol_found_by;
+        };
     private:
         SCIP *scip_problem_;
+        mutable Info infos_;
         std::array<std::array<SCIP_VAR *, N + 1>, SystemType::NUM_STATES> scip_state_vars_;
         std::array<std::array<SCIP_VAR *, N>, SystemType::NUM_INPUTS> scip_input_vars_;
         std::array<std::array<SCIP_CONS *, SystemType::NUM_STATES>, N> scip_dynamic_const_;
@@ -110,11 +119,14 @@ namespace mimpc {
                       N + 1, Eigen::RowMajor> &last_open_loop_state,
               typename Eigen::Matrix<double, SystemType::NUM_INPUTS, N, Eigen::RowMajor> &open_loop_input,
               typename Eigen::Matrix<double, SystemType::NUM_STATES,
-                      N + 1, Eigen::RowMajor> &open_loop_state) const override;
+                      N + 1, Eigen::RowMajor> &open_loop_state, double & obj_value) const override;
 
         unsigned int getStepsToCompensateControllerDelay() override;
 
         void writeProblemToFile(const std::string & file_path);
+        void setProblemName(const std::string & name);
+
+        const Info & getSCIPInfos() const;
     };
 };
 
