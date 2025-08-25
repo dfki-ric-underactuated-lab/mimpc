@@ -1,0 +1,52 @@
+{
+    "name": "MIMPC devcontainer",
+    "privileged": true,
+    "build": {
+        "dockerfile": "${localWorkspaceFolder}/Dockerfile",
+        "context": "${localWorkspaceFolder}"
+    },
+    "workspaceFolder": "/home/mimpc",
+    "customizations": {
+        "vscode": {
+            "extensions":[
+                "ms-vscode.cpptools",
+                "ms-vscode.cpptools-themes",
+                "ms-vscode.cpptools-extension-pack",
+                "twxs.cmake",
+                "donjayamanne.python-extension-pack",
+                "eamodio.gitlens",
+                "ms-iot.vscode-ros",
+                "xaver.clang-format",
+                "ms-vscode.cmake-tools",
+                "dotjoshjohnson.xml"
+            ]
+        }
+    },
+    "containerEnv": {
+        "DISPLAY": "unix:0",
+        "ROS_DOMAIN_ID": "42"
+    },
+    "runArgs": [
+        "--net=host",
+        "--pid=host",
+        "--ipc=host",
+        "-e", "DISPLAY=${env:DISPLAY}",
+        "--env=QT_X11_NO_MITSHM=1",
+        "--device=/dev:/dev",
+        "--device=/dev/input:/dev/input",
+        "--device=/dev/ttyACM0:/dev/ttyACM0"
+    ],
+    "mounts": [
+       "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
+       "source=/dev/dri,target=/dev/dri,type=bind,consistency=cached",
+       "source=${localWorkspaceFolder}/src,target=/home/mimpc/src,type=bind",
+       "source=${localWorkspaceFolder}/examples,target=/home/mimpc/examples,type=bind",
+       "source=${localWorkspaceFolder}/include,target=/home/mimpc/include,type=bind",
+       "source=${localWorkspaceFolder}/models,target=/home/mimpc/models,type=bind",
+       "source=${localWorkspaceFolder}/CMakeLists.txt,target=/home/mimpc/CMakeLists.txt,type=bind",
+       "source=${localWorkspaceFolder}/Doxyfile,target=/home/mimpc/Doxyfile,type=bind",
+       "source=${localWorkspaceFolder}/.devcontainer/c_cpp_properties.json,target=/home/mimpc/.vscode/c_cpp_properties.json,type=bind,consistency=cached"
+    
+    ],
+    "initializeCommand": "xhost +local:"
+}
