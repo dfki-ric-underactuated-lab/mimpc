@@ -39,6 +39,14 @@ RUN apt-get -qy install zlib1g-dev
 WORKDIR /usr/local/src
 RUN git clone https://github.com/rogersce/cnpy
 RUN cd cnpy && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/usr/local .. && make install
+# Install acados
+WORKDIR /usr/local/src
+RUN git clone https://github.com/acados/acados.git && cd acados && git submodule update --recursive --init && mkdir build
+WORKDIR /usr/local/src/acados/build
+RUN cmake .. -DCMAKE_BUILD_TYPE=Release -DACADOS_WITH_QPOASES=ON -DACADOS_WITH_OSQP=ON -DACADOS_WITH_QPDUNES=ON -DACADOS_WITH_DAQP=ON -DACADOS_INSTALL_DIR=/opt/acados -DACADOS_EXAMPLES=OFF && make install
+ENV LD_LIBRARY_PATH /opt/acados/lib:${LD_LIBRARY_PATH}
+ENV ACADOS_SOURCE_DIR "/usr/local/acados"
+
 ######### Install MIMPC
 RUN apt-get -qy install  doxygen
 COPY examples /home/mimpc/examples

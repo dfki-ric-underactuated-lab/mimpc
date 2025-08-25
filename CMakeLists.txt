@@ -24,6 +24,7 @@ set(LIBSOURCES
 
 find_package(fmt REQUIRED)
 find_package(SCIP REQUIRED)
+find_package(acados REQUIRED)
 
 if(BuildSim)
    message("Building simulation related content")
@@ -45,8 +46,8 @@ target_include_directories(mimpclib PUBLIC
                                 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                                 $<INSTALL_INTERFACE:${MYLB_INCLUDE_INSTALL_DESTINATION}>)
 target_include_directories(mimpclib PUBLIC ${SCIP_INCLUDE_DIRS})
-target_link_libraries(mimpclib PUBLIC ${SCIP_LIBRARIES})
-target_link_libraries(mimpclib INTERFACE ${SCIP_LIBRARIES} fmt::fmt)
+target_link_libraries(mimpclib PUBLIC ${SCIP_LIBRARIES} acados)
+target_link_libraries(mimpclib INTERFACE ${SCIP_LIBRARIES} fmt::fmt acados)
 
 if (BuildSim)
    add_library(mimpclibsim ${SIMSOURCES})

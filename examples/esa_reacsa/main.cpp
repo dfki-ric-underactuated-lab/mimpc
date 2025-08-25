@@ -1,6 +1,7 @@
 #include "sim/VizForces.hpp"
 #include "systems/REACSA.hpp"
 #include "solvers/SCIPSolver.hpp"
+#include "solvers/AcadosSolver.hpp"
 #include "sim/Simulation.hpp"
 #include <math.h>
 #include <iostream>
@@ -22,10 +23,10 @@ void do_sim(REACSA::StateVec & state_weight, REACSA::StateVec & state_final_weig
     Eigen::Vector<double, REACSA::NUM_STATES> target_state = {0, 0, 0, 0, 0, 0, 0};
 
     constexpr int delay_comp = 1;
-    constexpr INTEGRATION_SCHEME integration_scheme = BACKWARD_EULER;
+    constexpr INTEGRATION_SCHEME integration_scheme = FORWARD_EULER;
 
     REACSA reacsa;
-    SCIPSolver<REACSA, N, 1, 2, 3, delay_comp, integration_scheme> solver(
+    SCIPSolver<REACSA, N, 1, 2, 3, delay_comp, integration_scheme> solver_scip(
             state_weight,
             state_final_weight,
             input_weight,
@@ -34,6 +35,22 @@ void do_sim(REACSA::StateVec & state_weight, REACSA::StateVec & state_final_weig
             reacsa,
             0.1
     );
+
+    AcadosSolver<REACSA, N, 1, 2, 3, delay_comp, integration_scheme> solver_acados(
+        state_weight,
+        state_final_weight,
+        input_weight,
+        target_state,
+        COST_TYPE::L2Quadratic,
+        reacsa,
+        0.1,
+        PARTIAL_CONDENSING_OSQP,
+        N,
+        "ROBUST",
+        1
+    ); //TODO: not all parameters are taken
+
+    auto solver = solver_acados;
 
     // CONSTRAINTS
     // system on flatfloor const
@@ -94,7 +111,7 @@ void do_sim(REACSA::StateVec & state_weight, REACSA::StateVec & state_final_weig
     solver.addStateConstraintOnStep(N, state_final_lb,
                                     state_final_ub);
     MPC<REACSA, decltype(solver)> mpc(solver);
-    Simulation<decltype(mpc)> sim(0.1, reacsa_model, mpc, init_state, target_state, REACSA::StateVec::Constant(0.05),
+    Simulation<decltype(mpc)> sim(0.001, reacsa_model, mpc, init_state, target_state, REACSA::StateVec::Constant(0.05),
                                   state_const_lb,
                                   state_const_ub, true, systems::reacsa_constants::FORCE_THRUSTER);
     sim.simulateToTarget(100.0);
