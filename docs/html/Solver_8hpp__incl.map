@@ -1,0 +1,5 @@
+<map id="include/Solver.hpp" name="include/Solver.hpp">
+<area shape="rect" id="node1" title="Abstract class that represents any solver interface and provides a low&#45;lever mpc solver interface." alt="" coords="11,5,139,32"/>
+<area shape="rect" id="node2" title=" " alt="" coords="5,155,144,181"/>
+<area shape="rect" id="node3" href="$System_8hpp.html" title="Abstract class to represent system dynamics." alt="" coords="71,80,163,107"/>
+</map>

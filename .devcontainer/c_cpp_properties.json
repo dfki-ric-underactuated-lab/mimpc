@@ -6,7 +6,9 @@
                 "limitSymbolsToIncludedHeaders": false
             },
             "includePath": [
-                "/opt/acados/include"
+                "/opt/acados/include",
+                "/opt/drake/include",
+                "/usr/include/eigen3/" 
             ],
             "intelliSenseMode": "gcc-x64",
             "compilerPath": "/usr/bin/gcc",

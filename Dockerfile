@@ -29,10 +29,10 @@ RUN git clone https://github.com/fmtlib/fmt && cd fmt && git checkout 8.1.1
 RUN cd fmt && mkdir build && cd build && cmake .. && make install
 ########## Dependencies for simulation and examples
 # Install drake
-RUN wget https://github.com/RobotLocomotion/drake/releases/download/v1.25.0/drake-dev_1.25.0-1_amd64-jammy.deb && apt-get -qy install --no-install-recommends ./drake-dev_1.25.0-1_amd64-jammy.deb
+RUN wget https://github.com/RobotLocomotion/drake/releases/download/v1.44.0/drake-dev_1.44.0-1_amd64-jammy.deb && apt-get -qy install --no-install-recommends ./drake-dev_1.44.0-1_amd64-jammy.deb
 ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/opt/drake/lib"
 ENV PATH="${PATH}:/opt/drake/bin"
-RUN rm drake-dev_1.25.0-1_amd64-jammy.deb
+RUN rm drake-dev_1.44.0-1_amd64-jammy.deb
 # Intsall ZLIB
 RUN apt-get -qy install zlib1g-dev
 # Install Cnpy

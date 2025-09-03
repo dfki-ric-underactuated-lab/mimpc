@@ -1,0 +1,79 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-b266f0603e150a8dc2f6.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5.0"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "mimpc",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "mimpclib::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-mimpclib-Debug-db3e515cfae3e65d4fcd.json",
+					"name" : "mimpclib",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "mimpclibsim::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-mimpclibsim-Debug-5929da766e9cb90dff08.json",
+					"name" : "mimpclibsim",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "reacsamimpc::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-reacsamimpc-Debug-21f9d8f25fcbabf08f67.json",
+					"name" : "reacsamimpc",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/dfki.uni-bremen.de/fstark/Documents/mimpc/build",
+		"source" : "/home/dfki.uni-bremen.de/fstark/Documents/mimpc"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

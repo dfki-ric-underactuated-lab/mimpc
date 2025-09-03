@@ -23,36 +23,89 @@ namespace mimpc
         using SolverBase = Solver<SystemType, N, min_steps_on, min_steps_off, max_steps_on, num_steps_solver_delay, integration_scheme>;
 
     private:
-        typedef Eigen::Matrix<double, SystemType::NUM_STATES, SystemType::NUM_STATES, Eigen::ColMajor> QMatrixT;
-        typedef Eigen::Matrix<double, SystemType::NUM_INPUTS, SystemType::NUM_INPUTS, Eigen::ColMajor> RMatrixT;
-        typedef Eigen::Matrix<double, SystemType::NUM_STATES, SystemType::NUM_STATES, Eigen::ColMajor> AMatrixT;
-        typedef Eigen::Matrix<double, SystemType::NUM_STATES, SystemType::NUM_INPUTS, Eigen::ColMajor> BMatrixT;
-        typedef Eigen::Matrix<double, SystemType::NUM_STATES, 1, Eigen::ColMajor> stateVecT;
-        typedef Eigen::Matrix<double, SystemType::NUM_INPUTS, 1, Eigen::ColMajor> inputVecT;
+        struct
+        {
+            typedef Eigen::Matrix<double, SystemType::NUM_STATES, SystemType::NUM_STATES, Eigen::ColMajor> QMatrixT;
+            typedef Eigen::Matrix<double, SystemType::NUM_INPUTS, SystemType::NUM_INPUTS, Eigen::ColMajor> RMatrixT;
+            typedef Eigen::Matrix<double, SystemType::NUM_STATES, SystemType::NUM_STATES, Eigen::ColMajor> AMatrixT;
+            typedef Eigen::Matrix<double, SystemType::NUM_STATES, SystemType::NUM_INPUTS, Eigen::ColMajor> BMatrixT;
+            typedef Eigen::Matrix<double, SystemType::NUM_STATES, 1, Eigen::ColMajor> stateVecT;
+            typedef Eigen::Matrix<double, SystemType::NUM_INPUTS, 1, Eigen::ColMajor> inputVecT;
 
-        /*
-         * data fields
-         */
-        AMatrixT A_;
-        BMatrixT B_;
+            /*
+             * data fields
+             */
+            AMatrixT A_;
+            BMatrixT B_;
 
-        inputVecT lbu_;
-        inputVecT ubu_;
-        inputVecT ubuf_;
-        inputVecT lbuf_;
-        stateVecT lbx_;
-        stateVecT ubx_;
-        inputVecT ubxf_;
-        inputVecT lbxf_;
+            inputVecT lbu_;
+            inputVecT ubu_;
+            inputVecT ubuf_;
+            inputVecT lbuf_;
+            stateVecT lbx_;
+            stateVecT ubx_;
+            stateVecT ubxf_;
+            stateVecT lbxf_;
 
-        QMatrixT Q_;
-        RMatrixT R_;
-        QMatrixT Qf_;
-        stateVecT q_;
-        stateVecT qf_;
+            QMatrixT Q_;
+            RMatrixT R_;
+            QMatrixT Qf_;
+            stateVecT q_;
+            stateVecT qf_;
 
-        AMatrixT stateIdentity_;
-        RMatrixT inputIdentity_;
+            AMatrixT stateIdentity_;
+            RMatrixT inputIdentity_;
+        } l2_cost_members_;
+
+        struct
+        {
+
+            typedef Eigen::Matrix<double, SystemType::NUM_STATES, SystemType::NUM_STATES, Eigen::ColMajor> AMatrixT;
+            typedef Eigen::Matrix<double, SystemType::NUM_STATES, SystemType::NUM_STATES + SystemType::NUM_INPUTS * 2, Eigen::ColMajor> BMatrixT;
+            typedef Eigen::Matrix<double, SystemType::NUM_STATES, 1, Eigen::ColMajor> stateVecT;
+            typedef Eigen::Matrix<double, SystemType::NUM_STATES + SystemType::NUM_INPUTS * 2, 1, Eigen::ColMajor> inputVecT;
+            typedef Eigen::Matrix<double, SystemType::NUM_STATES, 1, Eigen::ColMajor> stateBVecT;
+            typedef Eigen::Matrix<double, SystemType::NUM_INPUTS, 1, Eigen::ColMajor> inputBVecT;
+            typedef Eigen::Matrix<double, SystemType::NUM_STATES * 2 + SystemType::NUM_INPUTS * 2, 1, Eigen::ColMajor> gVecT;
+            typedef Eigen::Matrix<double, SystemType::NUM_STATES * 2 + SystemType::NUM_INPUTS * 2, SystemType::NUM_STATES, Eigen::ColMajor> CMatrixT;
+            typedef Eigen::Matrix<double, SystemType::NUM_STATES * 2, SystemType::NUM_STATES, Eigen::ColMajor> DfMatrixT;
+            typedef Eigen::Matrix<double, SystemType::NUM_STATES * 2, SystemType::NUM_STATES, Eigen::ColMajor> CfMatrixT;
+            typedef Eigen::Matrix<double, SystemType::NUM_STATES * 2 + SystemType::NUM_INPUTS * 2, SystemType::NUM_STATES + SystemType::NUM_INPUTS * 2, Eigen::ColMajor> DMatrixT;
+            Eigen::Matrix<double, SystemType::NUM_STATES + 2 * SystemType::NUM_INPUTS,
+                          SystemType::NUM_STATES + 2 * SystemType::NUM_INPUTS>
+                R_;
+            Eigen::Matrix<double, SystemType::NUM_STATES, SystemType::NUM_STATES> Rf_;
+            /*
+             * data fields
+             */
+            AMatrixT A_;
+            BMatrixT B_;
+
+            inputBVecT lbu_;
+            inputBVecT ubu_;
+            inputBVecT ubuf_;
+            inputBVecT lbuf_;
+            stateBVecT lbx_;
+            stateBVecT ubx_;
+            stateBVecT ubxf_;
+            stateBVecT lbxf_;
+
+            gVecT ug_;
+            gVecT lg_;
+            gVecT ugf_;
+            gVecT lgf_;
+
+            DMatrixT D_;
+            CMatrixT C_;
+            DfMatrixT Df_;
+            CfMatrixT Cf_;
+
+            stateVecT q_;
+            inputVecT r_;
+            stateVecT rf_;
+
+        } l1_cost_members_;
+
         /*
          * acados stuff
          */

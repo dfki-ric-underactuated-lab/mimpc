@@ -1,0 +1,17 @@
+[
+{
+  "directory": "/home/dfki.uni-bremen.de/fstark/Documents/mimpc/build",
+  "command": "/usr/bin/c++ -I/home/dfki.uni-bremen.de/fstark/Documents/mimpc/include -I/opt/SCIPOptSuite-8.0.3-Linux/lib/cmake/scip/../../../include -isystem /opt/SCIPOptSuite-8.0.3-Linux/include -Wall -Wextra -g -Werror -Wall -Wextra -pedantic -std=gnu++23 -o CMakeFiles/mimpclib.dir/src/systems/REACSA.cpp.o -c /home/dfki.uni-bremen.de/fstark/Documents/mimpc/src/systems/REACSA.cpp",
+  "file": "/home/dfki.uni-bremen.de/fstark/Documents/mimpc/src/systems/REACSA.cpp"
+},
+{
+  "directory": "/home/dfki.uni-bremen.de/fstark/Documents/mimpc/build",
+  "command": "/usr/bin/c++ -DFMT_HEADER_ONLY=1 -DFMT_LOCALE -DFMT_SHARED -DHAVE_SPDLOG -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/dfki.uni-bremen.de/fstark/Documents/mimpc/include -isystem /opt/drake/include -isystem /opt/drake/include/drake_lcmtypes -isystem /opt/drake/include/lcm -isystem /usr/include/eigen3 -Wall -Wextra -g -Werror -Wall -Wextra -pedantic -std=gnu++23 -o CMakeFiles/mimpclibsim.dir/src/sim/VizForces.cpp.o -c /home/dfki.uni-bremen.de/fstark/Documents/mimpc/src/sim/VizForces.cpp",
+  "file": "/home/dfki.uni-bremen.de/fstark/Documents/mimpc/src/sim/VizForces.cpp"
+},
+{
+  "directory": "/home/dfki.uni-bremen.de/fstark/Documents/mimpc/build",
+  "command": "/usr/bin/c++ -DFMT_HEADER_ONLY=1 -DFMT_LOCALE -DFMT_SHARED -DHAVE_SPDLOG -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/opt/SCIPOptSuite-8.0.3-Linux/lib/cmake/scip/../../../include -I/home/dfki.uni-bremen.de/fstark/Documents/mimpc/include -isystem /opt/SCIPOptSuite-8.0.3-Linux/include -isystem /opt/drake/include -isystem /opt/drake/include/drake_lcmtypes -isystem /opt/drake/include/lcm -isystem /usr/include/eigen3 -Wall -Wextra -g -std=gnu++23 -o CMakeFiles/reacsamimpc.dir/examples/esa_reacsa/main.cpp.o -c /home/dfki.uni-bremen.de/fstark/Documents/mimpc/examples/esa_reacsa/main.cpp",
+  "file": "/home/dfki.uni-bremen.de/fstark/Documents/mimpc/examples/esa_reacsa/main.cpp"
+}
+]

@@ -80,7 +80,7 @@ namespace mimpc::simulation {
         Simulation(double delay_to_simulate, const std::string &plant_urdf_file, MPCType &mpc,
                    const StateVec &initState, const StateVec &targetState,
                    const StateVec &targetThreshold, const StateVec &stateConstraintsLb,
-                   const StateVec &stateConstraintsUb, bool withViz, double binary_force);
+                   const StateVec &stateConstraintsUb, bool withViz, double binary_force, double controller_dt);
 
         bool simulateToTarget(float time_out_seconds);
 
