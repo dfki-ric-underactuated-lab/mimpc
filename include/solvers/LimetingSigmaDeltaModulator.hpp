@@ -82,6 +82,72 @@ public:
     return this->current_output;
   }
 
+  template<unsigned int FIRING_HORIZON>
+  void GetFutureFirings(Eigen::Ref<Eigen::Matrix<double, NUMBER_THRUSTERS, FIRING_HORIZON>> firings, const double dt) const
+  {
+    firings.setZero();
+    for (size_t i = 0; i < NUMBER_THRUSTERS; i++)
+    {
+      double integrator_value = this->integrator_value(i);
+      THRUSTER_STATE thruster_state = this->thruster_states_[i];
+      double thruster_time = this->thruster_times_[i];
+      for (size_t j = 0; j < FIRING_HORIZON; j++)
+      {
+        thruster_time += dt;
+        switch (thruster_state)
+        {
+        case ON:
+          if (thruster_time > max_time_on_ || (thruster_time >= min_time_on_ && integrator_value <= this->EPS))
+          {
+            // Goto cool down
+            thruster_time = 0;
+            firings(i, j) = 0;
+            thruster_state = COOL_DOWN;
+          }
+          else
+          {
+            firings(i, j) = 1;
+          }
+          break;
+        case OFF:
+          // Check if turn on
+          if (integrator_value > this->EPS)
+          {
+            thruster_time = 0;
+            firings(i, j) = 1;
+            thruster_state = ON;
+          }
+          else
+          {
+            firings(i, j) = 0;
+          }
+          break;
+        case COOL_DOWN:
+          // Check if done cooling down, and maybe also directly going to fire
+          if (thruster_time >= min_time_off_ && integrator_value > this->EPS)
+          {
+            thruster_time = 0;
+            firings(i, j) = 1;
+            thruster_state = ON;
+          }
+          else if (thruster_time >= min_time_off_)
+          {
+            thruster_time = 0;
+            firings(i, j) = 0;
+            thruster_state = OFF;
+          }
+          else
+          {
+            firings(i, j) = 0;
+          }
+          break;
+        }
+        //integrator_value += dt * this->K * (0 - firings(i,j));
+  
+      }
+    }
+  }
+
   /**
    * @brief Resets the modulator to its default state, i.e. zeroes the output, integrated error and last sample
    * timestamp

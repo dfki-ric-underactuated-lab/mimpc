@@ -227,9 +227,19 @@ namespace mimpc
 
         // [A, B, -I] * [x, u, x+] = 0
 
+        // A*x + B*u + B*U_sd =  I*x
+        // A*x + B*u -I*x  = - B*U_sd
+        // [A, B, -I] * [x, u, x+] = - B * [u_sd]
+
+        Eigen::Matrix<double, SystemType::NUM_INPUTS, N> sigma_delta_inputs;
+        sigma_delta_inputs.setZero();
+        sigma_delta_modulator_.template GetFutureFirings<N>(sigma_delta_inputs.template block<SystemType::NUM_BIN_INPUTS, N>(SystemType::NUM_CONT_INPUTS,0), dt_);
+        
+
         for (unsigned int n = 0; n < N; n++)
         {
-            dynamic_cons_[n]->UpdateCoefficients(A, Eigen::Vector<double, SystemType::NUM_STATES>::Zero());
+            //std::cout << "SDM input at step " << n << ": " << sigma_delta_inputs.col(n).transpose() << std::endl;
+            dynamic_cons_[n]->UpdateCoefficients(A, -1 * dt_ * system_.getB(state) * sigma_delta_inputs.col(n));
         }
         for (unsigned int i = 0; i < SystemType::NUM_STATES; i++)
         {
@@ -289,8 +299,8 @@ namespace mimpc
 
         if (!result.is_success())
         {
-            std::cout << result.get_solver_details<drake::solvers::ClpSolver>().status << std::endl
-                      << prog_.to_string() << std::endl;
+            // std::cout << result.get_solver_details<drake::solvers::ClpSolver>().status << std::endl
+            //           << prog_.to_string() << std::endl;
 
             return SOLVER_RETURN::NO_SOLUTION;
         }

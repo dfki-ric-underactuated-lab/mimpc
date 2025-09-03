@@ -25,7 +25,9 @@ namespace mimpc {
       SOLVER_RETURN
     MPC<SystemType, SolverType>::control(const SystemType::StateVec &state,
                                          SystemType::InputVec &input,
-                                         std::string &stats) {
+                                         std::string &stats,
+                                         long int & solve_time_ms
+                                        ) {
 
         std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
         solver_.setState(state); //updates the system (linearizes)
@@ -43,7 +45,7 @@ namespace mimpc {
         SOLVER_RETURN result = solver_.solve(last_u_, last_x_, last_u_, last_x_);
         std::chrono::steady_clock::time_point solve = std::chrono::steady_clock::now();
 
-        long int solve_time = std::chrono::duration_cast<std::chrono::milliseconds>(solve - set_bin_hist).count();
+        solve_time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(solve - set_bin_hist).count();
 
         static int i = 0;
         std::printf("Control cycle %d", i++);
@@ -53,10 +55,10 @@ namespace mimpc {
                 std::chrono::duration_cast<std::chrono::milliseconds>(set_state - begin).count(),
                 std::chrono::duration_cast<std::chrono::milliseconds>(set_init_cons - set_state).count(),
                 std::chrono::duration_cast<std::chrono::milliseconds>(set_bin_hist - set_init_cons).count(),
-                solve_time
+                solve_time_ms
         );
 
-        stats = fmt::format("Took (realtime) [{} ms] ", solve_time);
+        stats = fmt::format("Took (realtime) [{} ms] ", solve_time_ms);
 
         switch (result) {
             case USER_INTERRUPT:

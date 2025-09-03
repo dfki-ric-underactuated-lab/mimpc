@@ -69,6 +69,7 @@ namespace mimpc::simulation {
         // logger
         drake::systems::VectorLogSink<double> *state_logger_;
         drake::systems::VectorLogSink<double> *input_logger_;
+        drake::systems::VectorLogSink<double> *solve_time_logger_;
 
         drake::systems::Simulator<double> *simulator_;
 
@@ -80,7 +81,7 @@ namespace mimpc::simulation {
         Simulation(double delay_to_simulate, const std::string &plant_urdf_file, MPCType &mpc,
                    const StateVec &initState, const StateVec &targetState,
                    const StateVec &targetThreshold, const StateVec &stateConstraintsLb,
-                   const StateVec &stateConstraintsUb, bool withViz, double binary_force, double controller_dt);
+                   const StateVec &stateConstraintsUb, bool withViz, double binary_force, double controller_dt, double realtime_rate);
 
         bool simulateToTarget(float time_out_seconds);
 

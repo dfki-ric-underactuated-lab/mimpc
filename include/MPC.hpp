@@ -43,7 +43,7 @@ namespace mimpc {
          *
          * @param returns the solver status even though no solutions are already handled by this class by using the old predictions
          */
-        SOLVER_RETURN control(const SystemType::StateVec &state, SystemType::InputVec &input, std::string &stats);
+        SOLVER_RETURN control(const SystemType::StateVec &state, SystemType::InputVec &input, std::string &stats, long int & solve_time_ms);
 
         virtual ~MPC() = default;
     };

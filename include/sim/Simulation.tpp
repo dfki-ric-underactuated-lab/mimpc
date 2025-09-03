@@ -12,7 +12,7 @@ namespace mimpc::simulation
     Simulation<MPCType>::Simulation(double delay_to_simulate, const std::string &plant_urdf_file, MPCType &mpc,
                                     const StateVec &initState, const StateVec &targetState,
                                     const StateVec &targetThreshold, const StateVec &stateConstraintsLb,
-                                    const StateVec &stateConstraintsUb, bool withViz, double binary_force, double controller_dt) : init_state_(initState),
+                                    const StateVec &stateConstraintsUb, bool withViz, double binary_force, double controller_dt, double realtime_rate) : init_state_(initState),
                                                                                                                                    target_state_(targetState),
                                                                                                                                    target_threshold_(targetThreshold),
                                                                                                                                    state_constraints_lb_(stateConstraintsLb),
@@ -80,6 +80,7 @@ namespace mimpc::simulation
 
         state_logger_ = drake::systems::LogVectorOutput(state_output_matrix_->get_output_port(), builder_);
         input_logger_ = drake::systems::LogVectorOutput(mpc_leaf_system_->get_output_port(0), builder_);
+        solve_time_logger_ = drake::systems::LogVectorOutput(mpc_leaf_system_->get_output_port(1), builder_);
 
         diagram_ = builder_->Build();
         simulator_ = new drake::systems::Simulator<double>(*diagram_);
@@ -89,7 +90,7 @@ namespace mimpc::simulation
         Eigen::Vector<double, 8> init_state_sized = {init_state_(0), init_state_(1), init_state_(2), 0.0,
                                                      init_state_(3), init_state_(4), init_state_(5), init_state_(6)};
         diagram_->GetMutableSubsystemState(*plant_, &context).get_mutable_continuous_state().SetFromVector(init_state_sized);
-        simulator_->set_target_realtime_rate(1.0);
+        simulator_->set_target_realtime_rate(realtime_rate);
     }
 
     template <class MPCType>
@@ -132,19 +133,28 @@ namespace mimpc::simulation
     {
         auto x_log = state_logger_->FindLog(simulator_->get_context());
         auto u_log = input_logger_->FindLog(simulator_->get_context());
+        auto time_log = solve_time_logger_->FindLog(simulator_->get_context());
 
         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> xnp = Eigen::Map<const Eigen::MatrixXd>(
             x_log.data().data(), x_log.data().rows(), x_log.data().cols());
         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> unp = Eigen::Map<const Eigen::MatrixXd>(
             u_log.data().data(), u_log.data().rows(), u_log.data().cols());
+        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> stnp = Eigen::Map<const Eigen::MatrixXd>(
+            time_log.data().data(), time_log.data().rows(), time_log.data().cols());
         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> xtimenp = Eigen::Map<const Eigen::MatrixXd>(
             x_log.sample_times().data(), x_log.sample_times().rows(), x_log.sample_times().cols());
         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> utimenp = Eigen::Map<const Eigen::MatrixXd>(
             u_log.sample_times().data(), u_log.sample_times().rows(), u_log.sample_times().cols());
+        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> sttimenp = Eigen::Map<const Eigen::MatrixXd>(
+            time_log.sample_times().data(), time_log.sample_times().rows(), time_log.sample_times().cols());
 
         cnpy::npz_save(filename, "x_log", xnp.data(), {(size_t)xnp.rows(), (size_t)xnp.cols()}, "w");
         cnpy::npz_save(filename, "u_log", unp.data(), {(size_t)unp.rows(), (size_t)unp.cols()}, "a");
+        cnpy::npz_save(filename, "time_log", stnp.data(), {(size_t)stnp.rows(), (size_t)stnp.cols()}, "a");
+        
         cnpy::npz_save(filename, "x_time", xtimenp.data(), {(size_t)xtimenp.rows(), (size_t)xtimenp.cols()}, "a");
         cnpy::npz_save(filename, "u_time", utimenp.data(), {(size_t)utimenp.rows(), (size_t)utimenp.cols()}, "a");
+        cnpy::npz_save(filename, "time_tine", sttimenp.data(), {(size_t)sttimenp.rows(), (size_t)sttimenp.cols()}, "a");
+        
     }
 }

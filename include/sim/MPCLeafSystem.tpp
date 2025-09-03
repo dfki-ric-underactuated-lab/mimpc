@@ -37,6 +37,7 @@ namespace mimpc::simulation {
         Eigen::Vector<double,
                 MPCType::SYSTEM_TYPE::NUM_CONT_INPUTS + MPCType::SYSTEM_TYPE::NUM_BIN_INPUTS> control_input;
         std::string stats;
+        long int solve_time_ms;
         //clamp state to stay feasible:
         for (unsigned int state_idx = 0; state_idx < MPCType::SYSTEM_TYPE::NUM_STATES; state_idx++) {
             if (system_state[state_idx] < state_constraints_lb_[state_idx]) {
@@ -49,8 +50,10 @@ namespace mimpc::simulation {
                 system_state[state_idx] = state_constraints_ub_[state_idx];
             }
         }
-        auto ret = reacsa_solver_.control(system_state, control_input, stats);
+
+        auto ret = reacsa_solver_.control(system_state, control_input, stats, solve_time_ms);
         discrete_state->get_mutable_vector(0).SetFromVector(control_input);
+        discrete_state->get_mutable_vector(1).SetFromVector(Eigen::Vector<double,1>(solve_time_ms));
         //TODO: get and set time
         if(ret == USER_INTERRUPT){
           return drake::systems::EventStatus::ReachedTermination(this, "User interrupt in solver");

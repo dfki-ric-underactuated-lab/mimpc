@@ -10,7 +10,7 @@ endif()
 
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-Ofast")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 set(LIB_VERSION_MAJOR 0 CACHE STRING "major version" FORCE)
 set(LIB_VERSION_MINOR 1 CACHE STRING "minor version" FORCE)

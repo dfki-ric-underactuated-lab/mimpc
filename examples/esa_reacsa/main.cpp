@@ -14,12 +14,12 @@ using namespace mimpc;
 using namespace mimpc::simulation;
 using namespace mimpc::systems;
 
-void do_sim(std::string solver_name, REACSA::StateVec &state_weight, REACSA::StateVec &state_final_weight, REACSA::InputVec &input_weight, std::string &name, REACSA::StateVec init_state = {1.0, -0.5, M_PI, 0.0, 0.1, 0, 0})
+void do_sim(std::string solver_name, REACSA::StateVec &state_weight, REACSA::StateVec &state_final_weight, REACSA::InputVec &input_weight, std::string &name, double solve_time_limit, REACSA::StateVec init_state = {1.0, -0.5, M_PI, 0.0, 0.1, 0, 0})
 {
-    std::cout << "Do sim: " << name << "with  " << solver_name <<std::endl;
+    std::cout << "Do sim: " << name << "with  " << solver_name << std::endl;
     static constexpr unsigned int N = 20;
     double rw_bound = 150.0 * reacsa_constants::RPM_2_RADPS;
-    unsigned int num_break_trusts = 1;
+    unsigned int num_break_trusts = 3;
 
     double controller_dt = 0.01;
 
@@ -30,8 +30,8 @@ void do_sim(std::string solver_name, REACSA::StateVec &state_weight, REACSA::Sta
     constexpr INTEGRATION_SCHEME integration_scheme = FORWARD_EULER;
 
     REACSA reacsa;
-    std::unique_ptr<Solver<REACSA, N, 1, 2, 3, delay_comp, integration_scheme>>  solver;
-    LimetingSigmaDeltaModulators<REACSA::NUM_BIN_INPUTS> mod(1.0, 0.5, 0.1, 0.3, 0.2);
+    std::unique_ptr<Solver<REACSA, N, 1, 2, 3, delay_comp, integration_scheme>> solver;
+    LimetingSigmaDeltaModulators<REACSA::NUM_BIN_INPUTS> mod(1.0, 0.1, 0.1, 0.3, 0.2);
     if (solver_name == "acados")
     {
         solver = std::make_unique<AcadosSolver<REACSA, N, 1, 2, 3, delay_comp, integration_scheme>>(
@@ -127,9 +127,9 @@ void do_sim(std::string solver_name, REACSA::StateVec &state_weight, REACSA::Sta
     {
         solver->addStateConstraintOnIndex(k, state_const_lb(k), state_const_ub(k));
     }
-    solver->setSolverTimeLimit(0.1);
+    solver->setSolverTimeLimit(solve_time_limit);
     solver->addStateConstraintOnStep(N, state_final_lb,
-                                    state_final_ub);
+                                     state_final_ub);
     // solver.setState(REACSA::StateVec(0.,0.,0.,0.,0.,0.,rw_speed_center));
     // Eigen::Matrix<double,REACSA::NUM_STATES, N+1, Eigen::RowMajor>xout;
     // Eigen::Matrix<double,REACSA::NUM_INPUTS, N, Eigen::RowMajor> uout;
@@ -139,15 +139,14 @@ void do_sim(std::string solver_name, REACSA::StateVec &state_weight, REACSA::Sta
 
     using SolverT = Solver<REACSA, N, 1, 2, 3, delay_comp, integration_scheme>;
 
-
-    MPC<REACSA,SolverT> mpc(*(solver.get()));
+    MPC<REACSA, SolverT> mpc(*(solver.get()));
     Simulation<decltype(mpc)> sim(0.0, reacsa_model, mpc, init_state, target_state, REACSA::StateVec::Constant(0.05),
                                   state_const_lb,
-                                  state_const_ub, true, systems::reacsa_constants::FORCE_THRUSTER, controller_dt);
-    sim.simulateToTarget(100.0);
+                                  state_const_ub, true, systems::reacsa_constants::FORCE_THRUSTER, controller_dt, 1.0);
+    sim.simulateToTarget(60.0);
 
-    auto ret = sim.simulate(5.0);
-    sim.saveData(name + "_" + solver_name);
+    auto ret = sim.simulate(60.0);
+    sim.saveData(name + "_" + solver_name + "_" +std::to_string(solve_time_limit) + ".npz");
     if (ret == -1)
     {
         exit(130);
@@ -173,7 +172,10 @@ void test_rand_inits(unsigned int num_experiments)
     {
         REACSA::StateVec init_state = {x_value(gen), y_value(gen), theta_value(gen), 0.0, 0.0, 0.0, 0.0};
         std::string name = "rand-test-" + std::to_string(i);
-        do_sim(state_weight, state_final_weight, input_weight, name, init_state);
+        for (auto solver_name : {"drake", "scip"})
+        {
+            do_sim(solver_name, state_weight, state_final_weight, input_weight, name, 0.1, init_state);
+        }
     }
 }
 
@@ -181,55 +183,26 @@ void test_pareto()
 {
 
     // Sim test
-    REACSA::StateVec state_weight = {20.0, 20.0, 1.5, 0.0, 0.0, 1.0, 0.0};
-    REACSA::StateVec state_final_weight = {40.0, 40.0, 2.5, 0.0, 0.0, 1.0, 0.0};
-    REACSA::InputVec input_weight = {0.1, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0};
+    REACSA::StateVec state_weight = {1., 1., 0.12, 0.0, 0.0, 0.0, 0.0};
+    REACSA::StateVec state_final_weight = state_weight * 10;
 
-    for (double i = 0.1; i < 3.0; i += 0.2)
+    for (double i = 0.; i <= 0.5; i += 0.01)
     {
-        state_weight = {20.0, 20.0, 2.0, 0.0, 0.0, 0.0, 0.0};
-        state_final_weight = state_weight;
-        input_weight = {0.0, i, i, i, i, i, i, i, i};
-        std::string name = "test-thrust-" + std::to_string(i);
-        do_sim(state_weight, state_final_weight, input_weight, name);
+        REACSA::InputVec input_weight = {0.0001, i,i,i,i,i,i,i,i};
+        std::string name = "test-w-force_" + std::to_string(i);
+        do_sim("scip",state_weight, state_final_weight, input_weight, name, 0.1);
+        do_sim("drake",state_weight, state_final_weight, input_weight, name, 0.1);
     }
 
-    for (double i = 0.0; i < 6.0; i += 0.2)
+    for (double i = 0.; i <= 0.5; i += 0.01)
     {
-        state_weight = {20.0, 20.0, 2.0, i, i, 0.0, 0.0};
-        state_final_weight = state_weight;
-        input_weight = {0.0, 1.9, 1.9, 1.9, 1.9, 1.9, 1.9, 1.9, 1.9};
-        std::string name = "test-velw-" + std::to_string(i);
-        do_sim(state_weight, state_final_weight, input_weight, name);
+        REACSA::InputVec input_weight = {0.0001, i,i,i,i,i,i,i,i};
+        std::string name = "test-w-force_" + std::to_string(i);
+        do_sim("scip",state_weight, state_final_weight, input_weight, name, 1.0);
     }
 
-    for (double i = 0.0; i < 40.0; i += 5.0)
-    {
-        state_weight = {20.0, 20.0, 2.0, 0.0, 0.0, 0.0, 0.0};
-        state_final_weight = state_weight;
-        state_final_weight(0) += i;
-        state_final_weight(1) += i;
 
-        input_weight = {0.0, 1.9, 1.9, 1.9, 1.9, 1.9, 1.9, 1.9, 1.9};
-        std::string name = "test-finalp-" + std::to_string(i);
-        do_sim(state_weight, state_final_weight, input_weight, name);
-    }
 
-    for (double i = 0.0; i < 4.0; i += 0.5)
-    {
-        state_weight = {20.0, 20.0, 2.0, i, i, 0.0, 0.0};
-        state_final_weight = state_weight;
-
-        input_weight = {i, 1.9, 1.9, 1.9, 1.9, 1.9, 1.9, 1.9, 1.9};
-        std::string name = "test-torque-" + std::to_string(i);
-        do_sim(state_weight, state_final_weight, input_weight, name);
-    }
-
-    for (unsigned int i = 0; i < 100; i++)
-    {
-        std::string name = "test-sim-" + std::to_string(i);
-        do_sim(state_weight, state_final_weight, input_weight, name);
-    }
 }
 
 int main()
@@ -239,5 +212,5 @@ int main()
     pthread_t thread_handle = pthread_self();
     pthread_setschedparam(thread_handle, SCHED_FIFO, &params);
 
-    test_rand_inits(200);
+    test_pareto();
 }
