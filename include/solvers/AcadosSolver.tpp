@@ -24,18 +24,20 @@ namespace mimpc
         std::string hpipm_mode,
         int warm_start,
         double controller_dt,
-        LimetingSigmaDeltaModulators<SystemType::NUM_BIN_INPUTS> &sdm) : cost_type_(cost_type),
-                                                                         system_(system),
-                                                                         system_dt_(system_dt),
-                                                                         state_cost_weights_(state_weights),
-                                                                         final_state_cost_weights_(final_weights),
-                                                                         input_cost_weights_(input_weights),
-                                                                         set_point_(set_point),
-                                                                         condensing_N_(condensing_N),
-                                                                         hpipm_mode_(hpipm_mode),
-                                                                         warm_start_(warm_start),
-                                                                         controller_dt_(controller_dt),
-                                                                         sigma_delta_modulator_(sdm)
+        LimetingSigmaDeltaModulators<SystemType::NUM_BIN_INPUTS> &sdm,
+        bool mi_informed) : cost_type_(cost_type),
+                            system_(system),
+                            system_dt_(system_dt),
+                            state_cost_weights_(state_weights),
+                            final_state_cost_weights_(final_weights),
+                            input_cost_weights_(input_weights),
+                            set_point_(set_point),
+                            condensing_N_(condensing_N),
+                            hpipm_mode_(hpipm_mode),
+                            warm_start_(warm_start),
+                            controller_dt_(controller_dt),
+                            sigma_delta_modulator_(sdm),
+                            mi_informed_(mi_informed)
     {
         static_assert(integration_scheme == FORWARD_EULER);
         // It really depends on the used cost type
@@ -761,7 +763,10 @@ namespace mimpc
                 Eigen::Matrix<double, SystemType::NUM_BIN_INPUTS, N, Eigen::ColMajor> limits;
                 future_firings.setZero();
                 limits.setOnes();
-                sigma_delta_modulator_.template GetFutureFirings<N>(future_firings.template block<SystemType::NUM_BIN_INPUTS, N>(SystemType::NUM_CONT_INPUTS, 0), limits, system_dt_);
+                if (mi_informed_)
+                {
+                    sigma_delta_modulator_.template GetFutureFirings<N>(future_firings.template block<SystemType::NUM_BIN_INPUTS, N>(SystemType::NUM_CONT_INPUTS, 0), limits, system_dt_);
+                }
 
                 Eigen::Vector<double, SystemType::NUM_INPUTS> ubu;
                 ubu.template segment<SystemType::NUM_CONT_INPUTS>(0) = l2_cost_members_.ubu_.template segment<SystemType::NUM_CONT_INPUTS>(0);
@@ -773,8 +778,11 @@ namespace mimpc
 
                     ocp_qp_in_set(solver_config_, qp_in_, n, const_cast<char *>("A"), l2_cost_members_.A_.data());
                     ocp_qp_in_set(solver_config_, qp_in_, n, const_cast<char *>("B"), l2_cost_members_.B_.data());
-                    ocp_qp_in_set(solver_config_, qp_in_, n, const_cast<char *>("b"), b.data());
-                    ocp_qp_in_set(solver_config_, qp_in_, n, const_cast<char *>("ubu"), ubu.data());
+                    if (mi_informed_)
+                    {
+                        ocp_qp_in_set(solver_config_, qp_in_, n, const_cast<char *>("b"), b.data());
+                        ocp_qp_in_set(solver_config_, qp_in_, n, const_cast<char *>("ubu"), ubu.data());
+                    }
                 }
             }
             break;

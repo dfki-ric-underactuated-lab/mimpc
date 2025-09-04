@@ -19,8 +19,8 @@ namespace mimpc
         const SystemType &system,
         double system_dt,
         double controller_dt,
-        LimetingSigmaDeltaModulators<SystemType::NUM_BIN_INPUTS> & sigma_delta_Modulator
-)
+        LimetingSigmaDeltaModulators<SystemType::NUM_BIN_INPUTS> &sigma_delta_Modulator,
+        bool mi_informed)
         : weights_(state_weights),
           final_weights_(final_weights),
           input_weights_(input_weights),
@@ -29,7 +29,8 @@ namespace mimpc
           dt_(system_dt),
           controller_dt_(controller_dt),
           cost_type_(cost_type),
-          sigma_delta_modulator_(sigma_delta_Modulator)
+          sigma_delta_modulator_(sigma_delta_Modulator),
+          mi_informed_(mi_informed)
     {
 
         states_ = prog_.NewContinuousVariables<SystemType::NUM_STATES, N + 1>("x");
@@ -234,20 +235,25 @@ namespace mimpc
         Eigen::Matrix<double, SystemType::NUM_INPUTS, N> sigma_delta_inputs;
         Eigen::Matrix<double, SystemType::NUM_BIN_INPUTS, N> limits;
         sigma_delta_inputs.setZero();
-        sigma_delta_modulator_.template GetFutureFirings<N>(sigma_delta_inputs.template block<SystemType::NUM_BIN_INPUTS, N>(SystemType::NUM_CONT_INPUTS,0), limits, dt_);
-        
+        if (mi_informed_)
+        {
+            sigma_delta_modulator_.template GetFutureFirings<N>(sigma_delta_inputs.template block<SystemType::NUM_BIN_INPUTS, N>(SystemType::NUM_CONT_INPUTS, 0), limits, dt_);
+        }
 
         for (unsigned int n = 0; n < N; n++)
         {
-            //std::cout << "SDM input at step " << n << ": " << sigma_delta_inputs.col(n).transpose() << std::endl;
+
             dynamic_cons_[n]->UpdateCoefficients(A, -1 * dt_ * system_.getB(state) * sigma_delta_inputs.col(n));
-            for(unsigned int i = SystemType::NUM_CONT_INPUTS; i < SystemType::NUM_INPUTS; i++)
+            // std::cout << "SDM input at step " << n << ": " << sigma_delta_inputs.col(n).transpose() << std::endl;
+
+            if (mi_informed_)
             {
-                input_constraints_[i][n]->UpdateUpperBound(Eigen::Vector<double, 1>(limits(i, n)));
+                for (unsigned int i = SystemType::NUM_CONT_INPUTS; i < SystemType::NUM_INPUTS; i++)
+                {
+                    input_constraints_[i][n]->UpdateUpperBound(Eigen::Vector<double, 1>(limits(i - SystemType::NUM_CONT_INPUTS, n)));
+                }
             }
         }
-
-    
 
         for (unsigned int i = 0; i < SystemType::NUM_STATES; i++)
         {
@@ -298,10 +304,10 @@ namespace mimpc
         Eigen::Matrix<double, SystemType::NUM_INPUTS, N, Eigen::RowMajor> &open_loop_input,
         Eigen::Matrix<double, SystemType::NUM_STATES, N + 1, Eigen::RowMajor> &open_loop_state) const
     {
-        for(int k = 0; k <= N; ++k)
-            const_cast<drake::solvers::MathematicalProgram&>(prog_).SetInitialGuess(states_.col(k), last_open_loop_state.col(k));
-        for(int k = 0; k < N; ++k)
-            const_cast<drake::solvers::MathematicalProgram&>(prog_).SetInitialGuess(inputs_.col(k), last_open_loop_input.col(k));
+        for (int k = 0; k <= N; ++k)
+            const_cast<drake::solvers::MathematicalProgram &>(prog_).SetInitialGuess(states_.col(k), last_open_loop_state.col(k));
+        for (int k = 0; k < N; ++k)
+            const_cast<drake::solvers::MathematicalProgram &>(prog_).SetInitialGuess(inputs_.col(k), last_open_loop_input.col(k));
 
         const auto result = solver_.Solve(prog_);
 
@@ -319,9 +325,7 @@ namespace mimpc
         for (int k = 0; k < N; ++k)
             open_loop_input.col(k) = result.GetSolution(inputs_.col(k));
 
-        
-
-        open_loop_input.template block<SystemType::NUM_BIN_INPUTS, 1>(SystemType::NUM_CONT_INPUTS, 0) =  const_cast<LimetingSigmaDeltaModulators<SystemType::NUM_BIN_INPUTS>&>(sigma_delta_modulator_).modulate_continuous_force(result.GetSolution(inputs_.template block<SystemType::NUM_BIN_INPUTS, 1>(SystemType::NUM_CONT_INPUTS, 0)), controller_dt_);
+        open_loop_input.template block<SystemType::NUM_BIN_INPUTS, 1>(SystemType::NUM_CONT_INPUTS, 0) = const_cast<LimetingSigmaDeltaModulators<SystemType::NUM_BIN_INPUTS> &>(sigma_delta_modulator_).modulate_continuous_force(result.GetSolution(inputs_.template block<SystemType::NUM_BIN_INPUTS, 1>(SystemType::NUM_CONT_INPUTS, 0)), controller_dt_);
 
         return SOLVER_RETURN::OPTIMAL;
     }

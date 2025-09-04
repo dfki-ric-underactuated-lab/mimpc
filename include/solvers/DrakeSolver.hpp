@@ -43,8 +43,8 @@ namespace mimpc
                     const SystemType &system,
                     double system_dt,
                     double controller_dt,
-                    LimetingSigmaDeltaModulators<SystemType::NUM_BIN_INPUTS> & sdm
-
+                    LimetingSigmaDeltaModulators<SystemType::NUM_BIN_INPUTS> & sdm,
+                    bool mi_informed = true
         );
 
         ~DrakeSolver() override = default;
@@ -85,6 +85,7 @@ namespace mimpc
         const SystemType system_;
         const double dt_;
         const double controller_dt_;
+        bool mi_informed_;
 
         COST_TYPE cost_type_;
         SystemType::StateVec final_weights_, weights_, set_point_;

@@ -47,18 +47,7 @@ void do_sim(std::string solver_name, REACSA::StateVec &state_weight, REACSA::Sta
             "SPEED",
             1,
             controller_dt,
-            mod); // TODO: not all parameters are taken
-    }
-    else if (solver_name == "scip")
-    {
-        solver = std::make_unique<SCIPSolver<REACSA, N, 1, 2, 3, delay_comp, integration_scheme>>(state_weight,
-                                                                                                  state_final_weight,
-                                                                                                  input_weight,
-                                                                                                  target_state,
-                                                                                                  COST_TYPE::L1Linear,
-                                                                                                  reacsa,
-                                                                                                  0.1);
-        controller_dt = 0.1;
+            mod, false); // TODO: not all parameters are taken
     }
     else if (solver_name == "drake")
     {
@@ -72,7 +61,49 @@ void do_sim(std::string solver_name, REACSA::StateVec &state_weight, REACSA::Sta
             reacsa,
             0.1,
             controller_dt,
-            mod);
+            mod, false);
+    }
+    else if (solver_name == "acadosmi")
+    {
+        solver = std::make_unique<AcadosSolver<REACSA, N, 1, 2, 3, delay_comp, integration_scheme>>(
+            state_weight,
+            state_final_weight,
+            input_weight,
+            target_state,
+            COST_TYPE::L2Quadratic,
+            reacsa,
+            0.1,
+            PARTIAL_CONDENSING_HPIPM,
+            N,
+            "SPEED",
+            1,
+            controller_dt,
+            mod, true); // TODO: not all parameters are taken
+    }
+    else if (solver_name == "drakemi")
+    {
+        controller_dt = 0.01;
+        solver = std::make_unique<DrakeSolver<REACSA, N, 1, 2, 3, delay_comp, integration_scheme>>(
+            state_weight,
+            state_final_weight,
+            input_weight,
+            target_state,
+            COST_TYPE::L1Linear,
+            reacsa,
+            0.1,
+            controller_dt,
+            mod, true);
+    }
+    else if (solver_name == "scip")
+    {
+        solver = std::make_unique<SCIPSolver<REACSA, N, 1, 2, 3, delay_comp, integration_scheme>>(state_weight,
+                                                                                                  state_final_weight,
+                                                                                                  input_weight,
+                                                                                                  target_state,
+                                                                                                  COST_TYPE::L1Linear,
+                                                                                                  reacsa,
+                                                                                                  0.1);
+        controller_dt = 0.1;
     }
     // CONSTRAINTS
     // system on flatfloor const
@@ -188,20 +219,20 @@ void test_pareto()
     REACSA::StateVec state_weight = {1., 1., 0.12, 0.0, 0.0, 0.0, 0.0};
     REACSA::StateVec state_final_weight = state_weight * 10;
 
-    for (double i = 0.15; i <= 0.25; i += 0.003)
+    for (double thru = 0.0; thru <= 0.4; thru += 0.025)
     {
-        REACSA::InputVec input_weight = {0.0001, i, i, i, i, i, i, i, i};
-        std::string name = "test-w-force_" + std::to_string(i);
-        do_sim("acados", state_weight, state_final_weight, input_weight, name, 0.1);
-        do_sim("scip", state_weight, state_final_weight, input_weight, name, 0.1);
-        do_sim("drake", state_weight, state_final_weight, input_weight, name, 0.1);
-    }
-
-    for (double i = 0.; i <= 0.5; i += 0.01)
-    {
-        REACSA::InputVec input_weight = {0.0001, i, i, i, i, i, i, i, i};
-        std::string name = "test-w-force_" + std::to_string(i);
-        do_sim("scip", state_weight, state_final_weight, input_weight, name, 1.0);
+        for (double vel = 0.0; vel <= 1.0; 0.25)
+        {
+            REACSA::InputVec input_weight = {0.0001, thru, thru, thru, thru, thru, thru, thru, thru};
+            REACSA::StateVec state_weight = {1., 1., 0.12, vel * 1., vel * 1., vel * 1., 0.0};
+            REACSA::StateVec state_final_weight = state_weight * 10;
+            std::string name = "test_force-" + std::to_string(thru) + "_vel-" + std::to_string(vel);
+            do_sim("drakemi", state_weight, state_final_weight, input_weight, name, 0.1);
+            do_sim("acadosmi", state_weight, state_final_weight, input_weight, name, 0.1);
+            do_sim("scip", state_weight, state_final_weight, input_weight, name, 0.1);
+            do_sim("acados", state_weight, state_final_weight, input_weight, name, 0.1);
+            do_sim("drake", state_weight, state_final_weight, input_weight, name, 0.1);
+        }
     }
 }
 
