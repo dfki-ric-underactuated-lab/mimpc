@@ -22,17 +22,20 @@ namespace mimpc
         ocp_qp_solver_t solver,
         int condensing_N,
         std::string hpipm_mode,
-        int warm_start) : cost_type_(cost_type),
-                          system_(system),
-                          system_dt_(system_dt),
-                          state_cost_weights_(state_weights),
-                          final_state_cost_weights_(final_weights),
-                          input_cost_weights_(input_weights),
-                          set_point_(set_point),
-                          condensing_N_(condensing_N),
-                          hpipm_mode_(hpipm_mode),
-                          warm_start_(warm_start)
-
+        int warm_start,
+        double controller_dt,
+        LimetingSigmaDeltaModulators<SystemType::NUM_BIN_INPUTS> &sdm) : cost_type_(cost_type),
+                                                                         system_(system),
+                                                                         system_dt_(system_dt),
+                                                                         state_cost_weights_(state_weights),
+                                                                         final_state_cost_weights_(final_weights),
+                                                                         input_cost_weights_(input_weights),
+                                                                         set_point_(set_point),
+                                                                         condensing_N_(condensing_N),
+                                                                         hpipm_mode_(hpipm_mode),
+                                                                         warm_start_(warm_start),
+                                                                         controller_dt_(controller_dt),
+                                                                         sigma_delta_modulator_(sdm)
     {
         static_assert(integration_scheme == FORWARD_EULER);
         // It really depends on the used cost type
@@ -197,7 +200,7 @@ namespace mimpc
 
             // ---- tiny Tikhonov regularization for L1 to make the QP strictly convex ----
             constexpr double eps_reg_slack = 1e-4; // 1e-8..1e-6 is typical
-            constexpr double eps_reg_u     = 1e-4;   // <<< was 0.0; make it > 0
+            constexpr double eps_reg_u = 1e-4;     // <<< was 0.0; make it > 0
 
             l1_cost_members_.R_.setZero();
 
@@ -711,6 +714,7 @@ namespace mimpc
             ocp_qp_in_set(solver_config_, qp_in_, N, const_cast<char *>("q"), l2_cost_members_.qf_.data());
             break;
         }
+        sigma_delta_modulator_.reset();
     }
 
     template <class SystemType, int N, int min_steps_on, int min_steps_off, int max_steps_on, int num_steps_solver_delay, INTEGRATION_SCHEME integration_scheme>
@@ -753,10 +757,16 @@ namespace mimpc
                 system_.updateA(state, updateAfun);
                 system_.updateB(state, updateBfun);
 
+                Eigen::Matrix<double, SystemType::NUM_INPUTS, N, Eigen::ColMajor> future_firings;
+                future_firings.setZero();
+                sigma_delta_modulator_.template GetFutureFirings<N>(future_firings.template block<SystemType::NUM_BIN_INPUTS, N>(SystemType::NUM_CONT_INPUTS,0), system_dt_);
+
                 for (unsigned int n = 0; n < N; n++)
                 {
+                    Eigen::Vector<double, SystemType::NUM_STATES> b = l2_cost_members_.B_ * future_firings.col(n);
                     ocp_qp_in_set(solver_config_, qp_in_, n, const_cast<char *>("A"), l2_cost_members_.A_.data());
                     ocp_qp_in_set(solver_config_, qp_in_, n, const_cast<char *>("B"), l2_cost_members_.B_.data());
+                    ocp_qp_in_set(solver_config_, qp_in_, n, const_cast<char *>("b"), b.data());
                 }
             }
             break;
@@ -905,6 +915,8 @@ namespace mimpc
             }
             break;
             }
+
+            open_loop_input.template block<SystemType::NUM_BIN_INPUTS, 1>(SystemType::NUM_CONT_INPUTS, 0) = const_cast<LimetingSigmaDeltaModulators<SystemType::NUM_BIN_INPUTS> &>(sigma_delta_modulator_).modulate_continuous_force(open_loop_input.template block<SystemType::NUM_BIN_INPUTS, 1>(SystemType::NUM_CONT_INPUTS, 0), controller_dt_);
         }
         else
         {

@@ -6,6 +6,9 @@
 #include <concepts>
 #include <iostream>
 
+#include "SimpleSigmaDeltaModulator.hpp"
+#include "LimetingSigmaDeltaModulator.hpp"
+
 #include "../Solver.hpp"
 
 namespace mimpc
@@ -133,6 +136,10 @@ namespace mimpc
 
         const SystemType &system_;
         double system_dt_;
+        const double controller_dt_;
+
+        LimetingSigmaDeltaModulators<SystemType::NUM_BIN_INPUTS> sigma_delta_modulator_;
+
         Eigen::Vector<double, SystemType::NUM_STATES> state_;
         Eigen::Vector<double, SystemType::NUM_STATES> state_cost_weights_;
         Eigen::Vector<double, SystemType::NUM_STATES> final_state_cost_weights_;
@@ -152,7 +159,9 @@ namespace mimpc
                      ocp_qp_solver_t solver,
                      int condensing_N,
                      std::string hpipm_mode,
-                     int warm_start);
+                     int warm_start,
+                     double controller_dt,
+                     LimetingSigmaDeltaModulators<SystemType::NUM_BIN_INPUTS> &sdm);
 
         virtual ~AcadosSolver();
 

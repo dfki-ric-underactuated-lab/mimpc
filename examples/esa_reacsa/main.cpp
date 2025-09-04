@@ -39,13 +39,16 @@ void do_sim(std::string solver_name, REACSA::StateVec &state_weight, REACSA::Sta
             state_final_weight,
             input_weight,
             target_state,
-            COST_TYPE::L1Linear,
+            COST_TYPE::L2Quadratic,
             reacsa,
             0.1,
             PARTIAL_CONDENSING_HPIPM,
             N,
-            "ROBUST",
-            1); // TODO: not all parameters are taken
+            "SPEED",
+            1,
+            controller_dt,
+            mod
+        ); // TODO: not all parameters are taken
     }
     else if (solver_name == "scip")
     {
@@ -172,7 +175,7 @@ void test_rand_inits(unsigned int num_experiments)
     {
         REACSA::StateVec init_state = {x_value(gen), y_value(gen), theta_value(gen), 0.0, 0.0, 0.0, 0.0};
         std::string name = "rand-test-" + std::to_string(i);
-        for (auto solver_name : {"drake", "scip"})
+        for (auto solver_name : {"acados","drake", "scip"})
         {
             do_sim(solver_name, state_weight, state_final_weight, input_weight, name, 0.1, init_state);
         }
@@ -186,10 +189,11 @@ void test_pareto()
     REACSA::StateVec state_weight = {1., 1., 0.12, 0.0, 0.0, 0.0, 0.0};
     REACSA::StateVec state_final_weight = state_weight * 10;
 
-    for (double i = 0.; i <= 0.5; i += 0.01)
+    for (double i = 0.15; i <= 0.25; i += 0.003)
     {
         REACSA::InputVec input_weight = {0.0001, i,i,i,i,i,i,i,i};
         std::string name = "test-w-force_" + std::to_string(i);
+        do_sim("acados",state_weight, state_final_weight, input_weight, name, 0.1);
         do_sim("scip",state_weight, state_final_weight, input_weight, name, 0.1);
         do_sim("drake",state_weight, state_final_weight, input_weight, name, 0.1);
     }
