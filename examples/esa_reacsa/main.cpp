@@ -47,8 +47,7 @@ void do_sim(std::string solver_name, REACSA::StateVec &state_weight, REACSA::Sta
             "SPEED",
             1,
             controller_dt,
-            mod
-        ); // TODO: not all parameters are taken
+            mod); // TODO: not all parameters are taken
     }
     else if (solver_name == "scip")
     {
@@ -149,7 +148,7 @@ void do_sim(std::string solver_name, REACSA::StateVec &state_weight, REACSA::Sta
     sim.simulateToTarget(60.0);
 
     auto ret = sim.simulate(60.0);
-    sim.saveData(name + "_" + solver_name + "_" +std::to_string(solve_time_limit) + ".npz");
+    sim.saveData(name + "_" + solver_name + "_" + std::to_string(solve_time_limit) + ".npz");
     if (ret == -1)
     {
         exit(130);
@@ -175,7 +174,7 @@ void test_rand_inits(unsigned int num_experiments)
     {
         REACSA::StateVec init_state = {x_value(gen), y_value(gen), theta_value(gen), 0.0, 0.0, 0.0, 0.0};
         std::string name = "rand-test-" + std::to_string(i);
-        for (auto solver_name : {"drake", "acados","scip"})
+        for (auto solver_name : {"drake", "acados", "scip"})
         {
             do_sim(solver_name, state_weight, state_final_weight, input_weight, name, 0.1, init_state);
         }
@@ -191,22 +190,19 @@ void test_pareto()
 
     for (double i = 0.15; i <= 0.25; i += 0.003)
     {
-        REACSA::InputVec input_weight = {0.0001, i,i,i,i,i,i,i,i};
+        REACSA::InputVec input_weight = {0.0001, i, i, i, i, i, i, i, i};
         std::string name = "test-w-force_" + std::to_string(i);
-        do_sim("acados",state_weight, state_final_weight, input_weight, name, 0.1);
-        do_sim("scip",state_weight, state_final_weight, input_weight, name, 0.1);
-        do_sim("drake",state_weight, state_final_weight, input_weight, name, 0.1);
+        do_sim("acados", state_weight, state_final_weight, input_weight, name, 0.1);
+        do_sim("scip", state_weight, state_final_weight, input_weight, name, 0.1);
+        do_sim("drake", state_weight, state_final_weight, input_weight, name, 0.1);
     }
 
     for (double i = 0.; i <= 0.5; i += 0.01)
     {
-        REACSA::InputVec input_weight = {0.0001, i,i,i,i,i,i,i,i};
+        REACSA::InputVec input_weight = {0.0001, i, i, i, i, i, i, i, i};
         std::string name = "test-w-force_" + std::to_string(i);
-        do_sim("scip",state_weight, state_final_weight, input_weight, name, 1.0);
+        do_sim("scip", state_weight, state_final_weight, input_weight, name, 1.0);
     }
-
-
-
 }
 
 int main()
