@@ -219,9 +219,9 @@ void test_pareto()
     REACSA::StateVec state_weight = {1., 1., 0.12, 0.0, 0.0, 0.0, 0.0};
     REACSA::StateVec state_final_weight = state_weight * 10;
 
-    for (double thru = 0.0; thru <= 0.4; thru += 0.025)
+    for (double thru = 0.0; thru <= 0.4; thru += 0.02)
     {
-        for (double vel = 0.0; vel <= 1.0; 0.25)
+        for (double vel = 0.0; vel <= 1.0; vel += 0.25)
         {
             REACSA::InputVec input_weight = {0.0001, thru, thru, thru, thru, thru, thru, thru, thru};
             REACSA::StateVec state_weight = {1., 1., 0.12, vel * 1., vel * 1., vel * 0.12, 0.0};
