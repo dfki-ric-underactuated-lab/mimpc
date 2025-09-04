@@ -224,7 +224,7 @@ void test_pareto()
         for (double vel = 0.0; vel <= 1.0; 0.25)
         {
             REACSA::InputVec input_weight = {0.0001, thru, thru, thru, thru, thru, thru, thru, thru};
-            REACSA::StateVec state_weight = {1., 1., 0.12, vel * 1., vel * 1., vel * 1., 0.0};
+            REACSA::StateVec state_weight = {1., 1., 0.12, vel * 1., vel * 1., vel * 0.12, 0.0};
             REACSA::StateVec state_final_weight = state_weight * 10;
             std::string name = "test_force-" + std::to_string(thru) + "_vel-" + std::to_string(vel);
             do_sim("drakemi", state_weight, state_final_weight, input_weight, name, 0.1);
