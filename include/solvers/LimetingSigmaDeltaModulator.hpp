@@ -83,7 +83,7 @@ public:
   }
 
   template<unsigned int FIRING_HORIZON>
-  void GetFutureFirings(Eigen::Ref<Eigen::Matrix<double, NUMBER_THRUSTERS, FIRING_HORIZON>> firings, const double dt) const
+  void GetFutureFirings(Eigen::Ref<Eigen::Matrix<double, NUMBER_THRUSTERS, FIRING_HORIZON>> firings, Eigen::Ref<Eigen::Matrix<double, NUMBER_THRUSTERS, FIRING_HORIZON>> limits, const double dt) const
   {
     firings.setZero();
     for (size_t i = 0; i < NUMBER_THRUSTERS; i++)
@@ -102,11 +102,13 @@ public:
             // Goto cool down
             thruster_time = 0;
             firings(i, j) = 0;
+            limits(i, j) = 0;
             thruster_state = COOL_DOWN;
           }
           else
           {
             firings(i, j) = 1;
+            limits(i, j) = 1;
           }
           break;
         case OFF:
@@ -120,6 +122,7 @@ public:
           else
           {
             firings(i, j) = 0;
+            limits(i, j) = 1;
           }
           break;
         case COOL_DOWN:
@@ -128,17 +131,20 @@ public:
           {
             thruster_time = 0;
             firings(i, j) = 1;
+            limits(i, j) = 1;
             thruster_state = ON;
           }
           else if (thruster_time >= min_time_off_)
           {
             thruster_time = 0;
             firings(i, j) = 0;
+            limits(i, j) = 1;
             thruster_state = OFF;
           }
           else
           {
             firings(i, j) = 0;
+            limits(i, j) = 0;
           }
           break;
         }

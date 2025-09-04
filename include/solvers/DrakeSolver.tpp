@@ -232,15 +232,23 @@ namespace mimpc
         // [A, B, -I] * [x, u, x+] = - B * [u_sd]
 
         Eigen::Matrix<double, SystemType::NUM_INPUTS, N> sigma_delta_inputs;
+        Eigen::Matrix<double, SystemType::NUM_BIN_INPUTS, N> limits;
         sigma_delta_inputs.setZero();
-        sigma_delta_modulator_.template GetFutureFirings<N>(sigma_delta_inputs.template block<SystemType::NUM_BIN_INPUTS, N>(SystemType::NUM_CONT_INPUTS,0), dt_);
+        sigma_delta_modulator_.template GetFutureFirings<N>(sigma_delta_inputs.template block<SystemType::NUM_BIN_INPUTS, N>(SystemType::NUM_CONT_INPUTS,0), limits, dt_);
         
 
         for (unsigned int n = 0; n < N; n++)
         {
             //std::cout << "SDM input at step " << n << ": " << sigma_delta_inputs.col(n).transpose() << std::endl;
             dynamic_cons_[n]->UpdateCoefficients(A, -1 * dt_ * system_.getB(state) * sigma_delta_inputs.col(n));
+            for(unsigned int i = SystemType::NUM_CONT_INPUTS; i < SystemType::NUM_INPUTS; i++)
+            {
+                input_constraints_[i][n]->UpdateUpperBound(Eigen::Vector<double, 1>(limits(i, n)));
+            }
         }
+
+    
+
         for (unsigned int i = 0; i < SystemType::NUM_STATES; i++)
         {
             state_constraints_[i][0]->UpdateLowerBound(state.template segment<1>(i));

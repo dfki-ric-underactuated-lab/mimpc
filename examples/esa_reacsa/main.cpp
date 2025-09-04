@@ -175,7 +175,7 @@ void test_rand_inits(unsigned int num_experiments)
     {
         REACSA::StateVec init_state = {x_value(gen), y_value(gen), theta_value(gen), 0.0, 0.0, 0.0, 0.0};
         std::string name = "rand-test-" + std::to_string(i);
-        for (auto solver_name : {"acados","drake", "scip"})
+        for (auto solver_name : {"drake", "acados","scip"})
         {
             do_sim(solver_name, state_weight, state_final_weight, input_weight, name, 0.1, init_state);
         }

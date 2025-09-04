@@ -758,15 +758,23 @@ namespace mimpc
                 system_.updateB(state, updateBfun);
 
                 Eigen::Matrix<double, SystemType::NUM_INPUTS, N, Eigen::ColMajor> future_firings;
+                Eigen::Matrix<double, SystemType::NUM_BIN_INPUTS, N, Eigen::ColMajor> limits;
                 future_firings.setZero();
-                sigma_delta_modulator_.template GetFutureFirings<N>(future_firings.template block<SystemType::NUM_BIN_INPUTS, N>(SystemType::NUM_CONT_INPUTS,0), system_dt_);
+                limits.setOnes();
+                sigma_delta_modulator_.template GetFutureFirings<N>(future_firings.template block<SystemType::NUM_BIN_INPUTS, N>(SystemType::NUM_CONT_INPUTS, 0), limits, system_dt_);
+
+                Eigen::Vector<double, SystemType::NUM_INPUTS> ubu;
+                ubu.template segment<SystemType::NUM_CONT_INPUTS>(0) = l2_cost_members_.ubu_.template segment<SystemType::NUM_CONT_INPUTS>(0);
 
                 for (unsigned int n = 0; n < N; n++)
                 {
                     Eigen::Vector<double, SystemType::NUM_STATES> b = l2_cost_members_.B_ * future_firings.col(n);
+                    ubu.template segment<SystemType::NUM_BIN_INPUTS>(SystemType::NUM_CONT_INPUTS) = limits.col(n);
+
                     ocp_qp_in_set(solver_config_, qp_in_, n, const_cast<char *>("A"), l2_cost_members_.A_.data());
                     ocp_qp_in_set(solver_config_, qp_in_, n, const_cast<char *>("B"), l2_cost_members_.B_.data());
                     ocp_qp_in_set(solver_config_, qp_in_, n, const_cast<char *>("b"), b.data());
+                    ocp_qp_in_set(solver_config_, qp_in_, n, const_cast<char *>("ubu"), ubu.data());
                 }
             }
             break;
