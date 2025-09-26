@@ -47,7 +47,7 @@ void do_sim(std::string solver_name, REACSA::StateVec &state_weight, REACSA::Sta
             "SPEED",
             1,
             controller_dt,
-            mod, false); // TODO: not all parameters are taken
+            mod, 0); // TODO: not all parameters are taken
     }
     else if (solver_name == "drake")
     {
@@ -61,9 +61,9 @@ void do_sim(std::string solver_name, REACSA::StateVec &state_weight, REACSA::Sta
             reacsa,
             0.1,
             controller_dt,
-            mod, false);
+            mod, 0);
     }
-    else if (solver_name == "acadosmi")
+    else if (solver_name == "acadosmi1")
     {
         solver = std::make_unique<AcadosSolver<REACSA, N, 1, 2, 3, delay_comp, integration_scheme>>(
             state_weight,
@@ -78,9 +78,9 @@ void do_sim(std::string solver_name, REACSA::StateVec &state_weight, REACSA::Sta
             "SPEED",
             1,
             controller_dt,
-            mod, true); // TODO: not all parameters are taken
+            mod, 1); // TODO: not all parameters are taken
     }
-    else if (solver_name == "drakemi")
+    else if (solver_name == "drakemi1")
     {
         controller_dt = 0.01;
         solver = std::make_unique<DrakeSolver<REACSA, N, 1, 2, 3, delay_comp, integration_scheme>>(
@@ -92,7 +92,69 @@ void do_sim(std::string solver_name, REACSA::StateVec &state_weight, REACSA::Sta
             reacsa,
             0.1,
             controller_dt,
-            mod, true);
+            mod, 1);
+    }
+    else if (solver_name == "acadosmi2")
+    {
+        solver = std::make_unique<AcadosSolver<REACSA, N, 1, 2, 3, delay_comp, integration_scheme>>(
+            state_weight,
+            state_final_weight,
+            input_weight,
+            target_state,
+            COST_TYPE::L2Quadratic,
+            reacsa,
+            0.1,
+            PARTIAL_CONDENSING_HPIPM,
+            N,
+            "SPEED",
+            1,
+            controller_dt,
+            mod, 2); // TODO: not all parameters are taken
+    }
+    else if (solver_name == "drakemi2")
+    {
+        controller_dt = 0.01;
+        solver = std::make_unique<DrakeSolver<REACSA, N, 1, 2, 3, delay_comp, integration_scheme>>(
+            state_weight,
+            state_final_weight,
+            input_weight,
+            target_state,
+            COST_TYPE::L1Linear,
+            reacsa,
+            0.1,
+            controller_dt,
+            mod, 2);
+    }
+    else if (solver_name == "acadosmi3")
+    {
+        solver = std::make_unique<AcadosSolver<REACSA, N, 1, 2, 3, delay_comp, integration_scheme>>(
+            state_weight,
+            state_final_weight,
+            input_weight,
+            target_state,
+            COST_TYPE::L2Quadratic,
+            reacsa,
+            0.1,
+            PARTIAL_CONDENSING_HPIPM,
+            N,
+            "SPEED",
+            1,
+            controller_dt,
+            mod, 3); // TODO: not all parameters are taken
+    }
+    else if (solver_name == "drakemi3")
+    {
+        controller_dt = 0.01;
+        solver = std::make_unique<DrakeSolver<REACSA, N, 1, 2, 3, delay_comp, integration_scheme>>(
+            state_weight,
+            state_final_weight,
+            input_weight,
+            target_state,
+            COST_TYPE::L1Linear,
+            reacsa,
+            0.1,
+            controller_dt,
+            mod, 3);
     }
     else if (solver_name == "scip")
     {
@@ -175,7 +237,7 @@ void do_sim(std::string solver_name, REACSA::StateVec &state_weight, REACSA::Sta
     MPC<REACSA, SolverT> mpc(*(solver.get()));
     Simulation<decltype(mpc)> sim(0.0, reacsa_model, mpc, init_state, target_state, REACSA::StateVec::Constant(0.05),
                                   state_const_lb,
-                                  state_const_ub, true, systems::reacsa_constants::FORCE_THRUSTER, controller_dt, 1.0);
+                                  state_const_ub, true, systems::reacsa_constants::FORCE_THRUSTER, controller_dt, 10.0);
     sim.simulateToTarget(60.0);
 
     auto ret = sim.simulate(60.0);
@@ -205,7 +267,7 @@ void test_rand_inits(unsigned int num_experiments)
     {
         REACSA::StateVec init_state = {x_value(gen), y_value(gen), theta_value(gen), 0.0, 0.0, 0.0, 0.0};
         std::string name = "rand-test-" + std::to_string(i);
-        for (auto solver_name : {"drake", "acados", "scip"})
+        for (auto solver_name : {"drake"})
         {
             do_sim(solver_name, state_weight, state_final_weight, input_weight, name, 0.1, init_state);
         }
@@ -219,19 +281,26 @@ void test_pareto()
     REACSA::StateVec state_weight = {1., 1., 0.12, 0.0, 0.0, 0.0, 0.0};
     REACSA::StateVec state_final_weight = state_weight * 10;
 
-    for (double thru = 0.0; thru <= 0.4; thru += 0.02)
+    for (double thru = 0.14; thru <= 0.5; thru += 0.01)
     {
         for (double vel = 0.0; vel <= 1.0; vel += 0.25)
         {
-            REACSA::InputVec input_weight = {0.0001, thru, thru, thru, thru, thru, thru, thru, thru};
-            REACSA::StateVec state_weight = {1., 1., 0.12, vel * 1., vel * 1., vel * 0.12, 0.0};
-            REACSA::StateVec state_final_weight = state_weight * 10;
-            std::string name = "test_force-" + std::to_string(thru) + "_vel-" + std::to_string(vel);
-            do_sim("drakemi", state_weight, state_final_weight, input_weight, name, 0.1);
-            do_sim("acadosmi", state_weight, state_final_weight, input_weight, name, 0.1);
-            do_sim("scip", state_weight, state_final_weight, input_weight, name, 0.1);
-            do_sim("acados", state_weight, state_final_weight, input_weight, name, 0.1);
-            do_sim("drake", state_weight, state_final_weight, input_weight, name, 0.1);
+            for (double final_mul = 1.0; final_mul <= 21; final_mul += 10)
+            {
+                REACSA::InputVec input_weight = {0.0001, thru, thru, thru, thru, thru, thru, thru, thru};
+                REACSA::StateVec state_weight = {1., 1., 0.12, vel * 1., vel * 1., vel * 0.12, 0.0};
+                REACSA::StateVec state_final_weight = state_weight * final_mul;
+                std::string name = "test_force-" + std::to_string(thru) + "_vel-" + std::to_string(vel) + "_finalmul-" + std::to_string(final_mul);
+                do_sim("drake", state_weight, state_final_weight, input_weight, name, 0.1);
+                do_sim("acados", state_weight, state_final_weight, input_weight, name, 0.1);
+                do_sim("drakemi1", state_weight, state_final_weight, input_weight, name, 0.1);
+                do_sim("acadosmi1", state_weight, state_final_weight, input_weight, name, 0.1);
+                do_sim("drakemi2", state_weight, state_final_weight, input_weight, name, 0.1);
+                do_sim("acadosmi2", state_weight, state_final_weight, input_weight, name, 0.1);
+                do_sim("drakemi3", state_weight, state_final_weight, input_weight, name, 0.1);
+                do_sim("acadosmi3", state_weight, state_final_weight, input_weight, name, 0.1);
+                do_sim("scip", state_weight, state_final_weight, input_weight, name, 0.1);
+            }
         }
     }
 }

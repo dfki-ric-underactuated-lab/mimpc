@@ -137,7 +137,7 @@ namespace mimpc
         const SystemType &system_;
         double system_dt_;
         const double controller_dt_;
-        bool mi_informed_;
+        int mi_informed_;
 
         LimetingSigmaDeltaModulators<SystemType::NUM_BIN_INPUTS> sigma_delta_modulator_;
 
@@ -163,7 +163,7 @@ namespace mimpc
                      int warm_start,
                      double controller_dt,
                      LimetingSigmaDeltaModulators<SystemType::NUM_BIN_INPUTS> &sdm,
-                     bool mi_informed = true);
+                     int mi_informed = 1);
 
         virtual ~AcadosSolver();
 

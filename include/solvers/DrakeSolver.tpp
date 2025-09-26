@@ -20,7 +20,7 @@ namespace mimpc
         double system_dt,
         double controller_dt,
         LimetingSigmaDeltaModulators<SystemType::NUM_BIN_INPUTS> &sigma_delta_Modulator,
-        bool mi_informed)
+        int mi_informed)
         : weights_(state_weights),
           final_weights_(final_weights),
           input_weights_(input_weights),
@@ -228,27 +228,34 @@ namespace mimpc
 
         // [A, B, -I] * [x, u, x+] = 0
 
-        // A*x + B*u + B*U_sd =  I*x
-        // A*x + B*u -I*x  = - B*U_sd
+        // A*x + B*u + B*U_sd =  I*x+
+        // A*x + B*u -I*x+  = - B*U_sd
         // [A, B, -I] * [x, u, x+] = - B * [u_sd]
 
         Eigen::Matrix<double, SystemType::NUM_INPUTS, N> sigma_delta_inputs;
         Eigen::Matrix<double, SystemType::NUM_BIN_INPUTS, N> limits;
         sigma_delta_inputs.setZero();
-        if (mi_informed_)
+        if (mi_informed_ >= 1)
         {
             sigma_delta_modulator_.template GetFutureFirings<N>(sigma_delta_inputs.template block<SystemType::NUM_BIN_INPUTS, N>(SystemType::NUM_CONT_INPUTS, 0), limits, dt_);
         }
-
         for (unsigned int n = 0; n < N; n++)
         {
 
             dynamic_cons_[n]->UpdateCoefficients(A, -1 * dt_ * system_.getB(state) * sigma_delta_inputs.col(n));
             // std::cout << "SDM input at step " << n << ": " << sigma_delta_inputs.col(n).transpose() << std::endl;
 
-            if (mi_informed_)
+            for (unsigned int i = SystemType::NUM_CONT_INPUTS; i < SystemType::NUM_INPUTS; i++)
             {
-                for (unsigned int i = SystemType::NUM_CONT_INPUTS; i < SystemType::NUM_INPUTS; i++)
+                if (mi_informed_ >= 3)
+                {
+
+                    if (sigma_delta_inputs(i, n) > 0.5)
+                    {
+                        limits(i - SystemType::NUM_CONT_INPUTS, n) = 0;
+                    }
+                }
+                if (mi_informed_ >= 2)
                 {
                     input_constraints_[i][n]->UpdateUpperBound(Eigen::Vector<double, 1>(limits(i - SystemType::NUM_CONT_INPUTS, n)));
                 }
