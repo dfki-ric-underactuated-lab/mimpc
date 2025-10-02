@@ -148,7 +148,7 @@ public:
           }
           break;
         }
-        //integrator_value += dt * this->K * (0 - firings(i,j));
+        integrator_value += dt * this->K * (0 - firings(i,j));
   
       }
     }
