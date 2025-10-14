@@ -20,7 +20,8 @@ def get_occurance_of_time_step_in_sequence(time_step: float, time_sequence: np.n
             return i
 
 
-data_dir = Path("gnc2_test_sept_big")
+data_dir = Path("gnc_test_oct_big")
+data_dir2 = Path("gnc2_test_sept_big")
 
 rows = []
 
@@ -168,10 +169,10 @@ def process_npz(npz_path: Path):
     return res
 
 pandas_df_store = "data.pkl"
-redo = False
+redo = True
 
 if redo or not os.path.exists(pandas_df_store):
-    files = sorted(data_dir.glob("*.npz"))
+    files = sorted(data_dir.glob("*.npz")) + sorted(data_dir2.glob("*.npz"))
 
     process_npz(files[0])
 
@@ -209,6 +210,7 @@ else:
 
 df["vel_weight"] = df["vel_weight"].astype(str)
 df["final_mul"] = df["final_mul"].astype(str)
+df.loc[df.query("controller == 'scip'").index, "mi"] = ''
 
 #df = df.query("mi=='0' | mi=='1' | mi=='3'")
 #df = df.query("controller != 'acados'")
@@ -259,26 +261,52 @@ solver_name_map = {
     "acados": "MPC (L2)",
 }
 
-solver_mi_name_map = {
-    "scip.0": "MIMPC (L1)",
-    "drake.0": "MPC uninformed (L1)",
-    "drake.1": "MPC informed (L1)",
-    "drake.2": "MPC half enforced (L1)",
-    "drake.3": "MPC enforced (L1)",
-    "acados.0": "MPC uninformed (L2)",
-    "acados.1": "MPC informed (L2)",
-    "acados.2": "MPC half enforced (L2)",
-    "acados.3": "MPC enforced (L2)",
-}
+
+
+solver_mi_name_map =  {
+        "scip": "MIMPC",
+        "drake": "MPC",
+        "acados": "MPC (L2)",
+        "": "explicit",
+        ".": "",
+        "0": "uninformed",
+        "1": "informed",
+        "2": "enforced",
+        "3": "enforced",
+        "scip.": "MIMPC",
+        "drake.0": "MPC uninformed",
+        "acados.0": "MPC (L2) uninformed",
+        "drake.1": "MPC informed",
+        "acados.1": "MPC (L2) informed",
+        "drake.2": "MPC enforced",
+        "acados.2": "MPC (L2) half enforced",
+        }
 
 fail_reason_name_map = {
-    "success": "Sucessfull",
+    "success": "Successful",
     "hit_wall": "Crash",
-    "less_than_30": "Too short in goal",
-    "diverge": "Passed by goal",
-    "no_reach": "Didn't reach goal"
+    "less_than_30": "Undershoot",
+    "diverge": "Overshoot",
+    "no_reach": "Undershoot"
 }
 
+fail_reason_colors = {
+    "success": "green",
+    "hit_wall": "red",
+    "diverge": "purple",
+    "no_reach": "blue"
+}
+
+measurement_name_mao = {
+    "rms_orient.cycle": "orientation RMS (rad)",
+    "rms_pos.cycle": "target position RMS (m)",
+    "time.reach": "time to reach target (s)",
+    "rms_orient": "orientation RMS (rad)",
+    "rms_pos": "position RMS (m)",
+    "time": "time (s)",
+    "cycle": "",
+    "reach": "",
+}
 
 
 
@@ -305,11 +333,11 @@ fail_reason_name_map = {
     
 df_melt = df_melt[(df_melt["metric"].str.contains("rms_pos") & df_melt["part"].str.contains("cycle")) | 
         # ( df_melt["metric"].str.contains("rms_pos") & df_melt["part"].str.contains("total")) | 
-        (df_melt["metric"].str.contains("rms_orient") & df_melt["part"].str.contains("total"))
+        (df_melt["metric"].str.contains("rms_orient") & df_melt["part"].str.contains("cycle"))
         | (df_melt["metric"].str.contains("time") & df_melt["part"].str.contains("reach"))
         ]
 
-df_melt["metric"] = df_melt["metric"] + df_melt["part"]
+#df_melt["metric"] = df_melt["metric"] + df_melt["part"]
 pareto_mask = paretoset(df_melt.query("failed == False")[["value", "thrust", "mi", "controller", "metric"]], ["min", "min", "diff", "diff", "diff"], distinct=False)
 
 df_melt.loc[df_melt.query("failed == False")[pareto_mask].index, "pareto_optimal_melt"] = True
@@ -319,46 +347,115 @@ euro_gnc_with_in = 6.9
 plot_style =  p9.theme_bw() + p9.theme(figure_size=(euro_gnc_with_in,3.4), #inches
                 text=p9.element_text(size=10, family="Times New Roman"),
                 )
+leg_below =  p9.theme(legend_position='bottom',
+                      #legend_box="vertical",
+                      legend_box_spacing=0.012,
+                      legend_spacing=15.0,
+                      legend_text=p9.element_text(size=9, hjust=0),
+                      legend_title=p9.element_text(face='bold',size=10),
+                      legend_direction='vertical',
+                      legend_text_position='right'
+                      )
 
 
 df_melt_clip = df_melt.query("part=='reach'")
 df_melt_clip["thrust"] = df_melt_clip["thrust"].clip(upper=0.3)
 p = (
     p9.ggplot(df_melt_clip.query("part=='reach'"), aes(x="thrust", fill="fail_reason"))
-    + p9.geom_histogram(alpha=0.4, position="stack", binwidth=0.05)
-    + p9.facet_grid(rows="controller + '.' + mi", labeller=p9.labeller(rows=solver_mi_name_map))
+    + p9.geom_histogram(alpha=1.0, position="stack", binwidth=0.05)
+    + p9.facet_grid(rows="mi", cols="controller", labeller=p9.labeller(cols=solver_mi_name_map, rows=solver_mi_name_map, multi_line=True))
     + p9.labs(x="Average thrust usage (s/s)", y="Num experiments (#)")
     #+ p9.coord_flip()
     + p9.scale_fill_discrete(labels=fail_reason_name_map, name='Experiment status')
-    #+ p9.guides(fill=p9.guide_legend(title='Experiment status'))
-    + p9.theme_bw() + p9.theme(figure_size=(euro_gnc_with_in,10), #inches
+    + p9.guides(fill=p9.guide_legend(nrow=1))
+    + p9.theme_bw() + p9.theme(figure_size=(euro_gnc_with_in,5), #inches
                 text=p9.element_text(size=10, family="Times New Roman"),
-                )
+                ) 
+    + leg_below
 ).save("experiment_status.pdf")
 
-exit()
+df_melt_clip.loc[df_melt_clip.query("fail_reason=='less_than_30'").index, "fail_reason"] = "no_reach"
 p = (
-    p9.ggplot(df_melt[df_melt["failed"] == False], aes(x="thrust", y="value", color="mi", fill="mi"))
-    + p9.geom_point(aes(shape='final_mul'), size=1.5, alpha=0.3, stroke=0.0)
-    + p9.facet_grid(rows="metric + '.' + part", cols="controller", scales="free")
+    p9.ggplot(df_melt_clip.query("part=='reach' & (mi=='' | mi=='0' | mi=='1' | mi=='2') & (controller!='acados')"), aes(x="thrust", fill="fail_reason"))
+    + p9.geom_histogram(aes(y=p9.after_stat("count")),alpha=1.0, position="stack", binwidth=0.01)
+    #+p9.geom_density(aes(y=p9.after_stat("count*0.05")), alpha=0.1)
+    + p9.facet_wrap("controller + '.' + mi", labeller=p9.labeller(cols=solver_mi_name_map), nrow=1)
+    + p9.labs(x="Average thrust usage (s/s)", y="Num experiments (#)")
+    #+ p9.coord_flip()
+    + p9.scale_fill_manual(fail_reason_colors, labels=fail_reason_name_map, name='Experiment status')
+
+    + p9.guides(fill=p9.guide_legend(nrow=1))
+    + p9.theme_bw() + p9.theme(figure_size=(euro_gnc_with_in,2.5), #inches
+                text=p9.element_text(size=10, family="Times New Roman"),
+                ) 
+    + leg_below
+).save("experiment_status_compact.pdf")
+
+print(df_melt_clip.groupby(["controller", "mi"]))
+
+
+p = (
+    p9.ggplot(df_melt.query("failed==False & controller!='scip'"), aes(x="thrust", y="value", color="mi", fill="mi"))
+    + p9.geom_point(size=0.7, alpha=0.5, stroke=0.0)
+    + p9.facet_grid(rows="metric + '.' + part", cols="controller", scales="free", labeller=p9.labeller(cols=solver_mi_name_map, rows=measurement_name_mao))
     #+ p9.geom_point(df_melt[df_melt["failed"] == True], p9.aes(x="thrust", y=np.inf, color="mi", alpha=0.2), shape="x")
-    + p9.geom_line(df_melt[df_melt["pareto_optimal_melt"]==True], size=1., alpha=0.6)
-    + p9.geom_point(df_melt[df_melt["pareto_optimal_melt"]==True], aes(shape='final_mul'), size=1.5, alpha=.8, stroke=0.0)
+    + p9.geom_line(df_melt.query("pareto_optimal_melt==True & controller!='scip'"), size=0.7, alpha=0.8, linetype="-.")
+    + p9.geom_point(df_melt.query("pareto_optimal_melt==True & controller!='scip'"), size=1., alpha=.9, stroke=0.0)
     + p9.scale_x_log10()
     + p9.scale_y_log10()
-).show()
+    + p9.scale_color_discrete(labels=solver_mi_name_map, name="MI information level")
+    + p9.scale_fill_discrete(labels=solver_mi_name_map, name="MI information level")
+    + p9.labs(x='Average thrust usage (s/s)', y='')
+    + p9.guides(color=p9.guide_legend(nrow=1))
+    + p9.theme_bw() + p9.theme(figure_size=(euro_gnc_with_in,5), #inches
+                text=p9.element_text(size=10, family="Times New Roman"),
+                ) 
+    + leg_below
+).save("comp_mi.pdf")
 
 
+query = "(mi=='' | mi=='0' | mi=='1' | mi=='2') & (metric!='rms_orient') & (controller!='acados')"
 p = (
-    p9.ggplot(df_melt[df_melt["failed"] == False], aes(x="thrust", y="value", color="controller + '.' + mi", fill="controller + '.' + mi"))
-    + p9.geom_point(size=0.6, alpha=0.6, stroke=0.0)
-    + p9.facet_grid(rows="metric + '.' + part", scales="free")
+    p9.ggplot(df_melt.query(f"failed==False & ({query})"), aes(x="thrust", y="value", color="controller + '.' + mi", fill="controller + '.' + mi"))
+    + p9.geom_point(size=.9, alpha=0.8, stroke=0.0)
+    + p9.facet_wrap("metric + '.' + part", scales="free", labeller=p9.labeller(cols=measurement_name_mao))
     #+ p9.geom_point(df_melt[df_melt["failed"] == True], p9.aes(x="thrust", y=np.inf, alpha=0.2), shape="x")
-    + p9.geom_line(df_melt[df_melt["pareto_optimal_melt"]==True], size=0.7, alpha=1.0)
-    + p9.geom_point(df_melt[df_melt["pareto_optimal_melt"]==True], size=2., alpha=.5)
+    + p9.geom_line(df_melt.query(f"pareto_optimal_melt==True & {query}"), size=0.5, alpha=0.8, linetype="-")
+    + p9.geom_point(df_melt.query(f"pareto_optimal_melt==True & {query}"), size=1., alpha=0.8)
     + p9.scale_x_log10()
     + p9.scale_y_log10()
+    + p9.scale_color_discrete(labels=solver_mi_name_map, name="Controller")
+    + p9.scale_fill_discrete(labels=solver_mi_name_map, name="Controller")
+    #+ p9.scale_shape_discrete(labels=solver_mi_name_map, name="MI information level")
+    + p9.labs(x='Average thrust usage (s/s)', y='')
+    + p9.guides(color=p9.guide_legend(nrow=1),shape=p9.guide_legend(nrow=1), fill=p9.guide_legend(nrow=1))
+    + p9.theme_bw() + p9.theme(figure_size=(euro_gnc_with_in,3.8), #inches
+                text=p9.element_text(size=10, family="Times New Roman"),
+                ) 
+    + leg_below
 ).show()
+
+
+query = "(mi=='' | mi=='0' | mi=='1' | mi=='2') & (metric=='rms_orient') & (controller!='acados')"
+p = (
+    p9.ggplot(df_melt.query(f"failed==False & ({query})"), aes(x="thrust", y="value", color="controller + '.' + mi", fill="controller + '.' + mi"))
+    + p9.geom_point(size=1.0, alpha=0.8, stroke=0.0)
+    + p9.facet_wrap("metric + '.' + part", scales="free", labeller=p9.labeller(cols=measurement_name_mao))
+    #+ p9.geom_point(df_melt[df_melt["failed"] == True], p9.aes(x="thrust", y=np.inf, alpha=0.2), shape="x")
+    + p9.scale_x_log10()
+    + p9.scale_y_log10()
+    + p9.scale_color_discrete(labels=solver_mi_name_map, name="Controller")
+    + p9.scale_fill_discrete(labels=solver_mi_name_map, name="Controller")
+    #+ p9.scale_shape_discrete(labels=solver_mi_name_map, name="MI information level")
+    + p9.labs(x='Average thrust usage (s/s)', y='')
+    + p9.guides(color=p9.guide_legend(nrow=1),shape=p9.guide_legend(nrow=1), fill=p9.guide_legend(nrow=1))
+    + p9.theme_bw() + p9.theme(figure_size=(euro_gnc_with_in,4.), #inches
+                text=p9.element_text(size=10, family="Times New Roman"),
+                ) 
+    + leg_below
+).save("comp_solver_orient.pdf")
+
+
 
 
 
