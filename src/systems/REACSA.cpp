@@ -81,8 +81,9 @@ namespace mimpc::systems
                                     double t_min_off,
                                     double t_max_on, double &v_bound, double &x_bound)
     {
-        x_bound = f_nom * num_break_thrusts / system_m * (num_break_thrusts * t_max_on + 2 * t_min_on) + t_min_off * t_max_on +
-                  5 * f_nom * pow(t_min_on, 2) / 4 * system_m + 2 * f_nom * t_min_off * t_min_on / system_m;
+        x_bound = f_nom * num_break_thrusts / system_m * (num_break_thrusts * t_max_on + 2 * t_min_on)*(t_min_off * t_max_on) +
+                (f_nom * num_break_thrusts * t_min_off * t_max_on) / system_m +
+                  5 * f_nom * pow(t_min_on, 2) / (4 * system_m) + (2 * f_nom * t_min_off * t_min_on) / system_m;
         v_bound = num_break_thrusts * (2 * f_nom * t_max_on) / system_m + 2 * f_nom * t_min_on / system_m;
     }
 

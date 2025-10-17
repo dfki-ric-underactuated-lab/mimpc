@@ -38,7 +38,6 @@ public:
 
     for (size_t i = 0; i < NUMBER_THRUSTERS; i++)
     {
-      thruster_times_[i] += dt;
       switch (thruster_states_[i])
       {
       case ON:
@@ -77,13 +76,14 @@ public:
       }
       // Integrate the current error weighted by the system gain k
       this->integrator_value(i) += dt * this->K * (input(i) - this->current_output(i));
+      thruster_times_[i] += dt;
     }
 
     return this->current_output;
   }
 
   template<unsigned int FIRING_HORIZON>
-  void GetFutureFirings(Eigen::Ref<Eigen::Matrix<double, NUMBER_THRUSTERS, FIRING_HORIZON>> firings, Eigen::Ref<Eigen::Matrix<double, NUMBER_THRUSTERS, FIRING_HORIZON>> limits, const double dt) const
+  void GetFutureFirings(Eigen::Ref<Eigen::Matrix<double, NUMBER_THRUSTERS, FIRING_HORIZON>> firings, Eigen::Ref<Eigen::Matrix<double, NUMBER_THRUSTERS, FIRING_HORIZON>> limits, const double predict_dt) const
   {
     firings.setZero();
     for (size_t i = 0; i < NUMBER_THRUSTERS; i++)
@@ -93,7 +93,6 @@ public:
       double thruster_time = this->thruster_times_[i];
       for (size_t j = 0; j < FIRING_HORIZON; j++)
       {
-        thruster_time += dt;
         switch (thruster_state)
         {
         case ON:
@@ -118,6 +117,7 @@ public:
             thruster_time = 0;
             firings(i, j) = 1;
             thruster_state = ON;
+            limits(i, j) = 1;
           }
           else
           {
@@ -148,8 +148,8 @@ public:
           }
           break;
         }
-        integrator_value += dt * this->K * (0 - firings(i,j));
-  
+        integrator_value += predict_dt * this->K * (0 - firings(i,j));
+        thruster_time += predict_dt;
       }
     }
   }
