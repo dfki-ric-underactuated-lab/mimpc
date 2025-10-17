@@ -281,9 +281,9 @@ void test_pareto()
     REACSA::StateVec state_weight = {1., 1., 0.12, 0.0, 0.0, 0.0, 0.0};
     REACSA::StateVec state_final_weight = state_weight * 10;
 
-    for (double thru = 0.14; thru <= 0.5; thru += 0.01)
+    for (double thru = 0.0; thru <= 0.8; thru += 0.005)
     {
-        for (double vel = 0.0; vel <= 1.0; vel += 0.25)
+        for (double vel = 0.0; vel <= 1.0; vel += 0.5)
         {
             for (double final_mul = 1.0; final_mul <= 21; final_mul += 10)
             {
@@ -297,8 +297,8 @@ void test_pareto()
                 do_sim("acadosmi1", state_weight, state_final_weight, input_weight, name, 0.1);
                 do_sim("drakemi2", state_weight, state_final_weight, input_weight, name, 0.1);
                 do_sim("acadosmi2", state_weight, state_final_weight, input_weight, name, 0.1);
-                do_sim("drakemi3", state_weight, state_final_weight, input_weight, name, 0.1);
-                do_sim("acadosmi3", state_weight, state_final_weight, input_weight, name, 0.1);
+                //do_sim("drakemi3", state_weight, state_final_weight, input_weight, name, 0.1);
+                //do_sim("acadosmi3", state_weight, state_final_weight, input_weight, name, 0.1);
                 do_sim("scip", state_weight, state_final_weight, input_weight, name, 0.1);
             }
         }
