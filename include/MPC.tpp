@@ -48,10 +48,9 @@ namespace mimpc {
         solve_time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(solve - set_bin_hist).count();
 
         static int i = 0;
-        std::printf("Control cycle %d", i++);
-
         std::printf(
-                "\t \t \t \n set_state: %ld [ms] \n set_ini_cons: %ld [ms] \n set_bin_hist: %ld [ms] \n solve: %ld [ms] \n",
+                "\r Control cycle %d \t set_state: %ld [ms], set_ini_cons: %ld [ms], set_bin_hist: %ld [ms], solve: %ld [ms],",
+                i++,
                 std::chrono::duration_cast<std::chrono::milliseconds>(set_state - begin).count(),
                 std::chrono::duration_cast<std::chrono::milliseconds>(set_init_cons - set_state).count(),
                 std::chrono::duration_cast<std::chrono::milliseconds>(set_bin_hist - set_init_cons).count(),
@@ -84,7 +83,7 @@ namespace mimpc {
         }
         history_(Eigen::all, Eigen::last) = input;
 
-        std::cout << stats.c_str() << std::endl;
+        std::cout << stats.c_str();
         return result; //Propagating result for information purposes and to handle interrupt
     }
 }

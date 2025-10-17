@@ -16,7 +16,7 @@ using namespace mimpc::systems;
 
 void do_sim(std::string solver_name, REACSA::StateVec &state_weight, REACSA::StateVec &state_final_weight, REACSA::InputVec &input_weight, std::string &name, double solve_time_limit, REACSA::StateVec init_state = {1.0, -0.5, M_PI, 0.0, 0.1, 0, 0})
 {
-    std::cout << "Do sim: " << name << "with  " << solver_name << std::endl;
+    std::cout << "\r Do sim: " << name << "with  " << solver_name << std::endl << std::endl;
     static constexpr unsigned int N = 20;
     double rw_bound = 150.0 * reacsa_constants::RPM_2_RADPS;
     unsigned int num_break_trusts = 3;
@@ -167,6 +167,10 @@ void do_sim(std::string solver_name, REACSA::StateVec &state_weight, REACSA::Sta
                                                                                                   0.1);
         controller_dt = 0.1;
     }
+    else
+    {
+        throw std::runtime_error("Unknown solver name: " + solver_name);
+    }   
     // CONSTRAINTS
     // system on flatfloor const
     // RW Speed Max and min are mixed up! this is because of
@@ -237,7 +241,7 @@ void do_sim(std::string solver_name, REACSA::StateVec &state_weight, REACSA::Sta
     MPC<REACSA, SolverT> mpc(*(solver.get()));
     Simulation<decltype(mpc)> sim(0.0, reacsa_model, mpc, init_state, target_state, REACSA::StateVec::Constant(0.05),
                                   state_const_lb,
-                                  state_const_ub, true, systems::reacsa_constants::FORCE_THRUSTER, controller_dt, 10.0);
+                                  state_const_ub, true, systems::reacsa_constants::FORCE_THRUSTER, controller_dt, 100.0);
     sim.simulateToTarget(60.0);
 
     auto ret = sim.simulate(60.0);
@@ -274,14 +278,14 @@ void test_rand_inits(unsigned int num_experiments)
     }
 }
 
-void test_pareto()
+void test_pareto(std::string controller)
 {
 
     // Sim test
     REACSA::StateVec state_weight = {1., 1., 0.12, 0.0, 0.0, 0.0, 0.0};
     REACSA::StateVec state_final_weight = state_weight * 10;
 
-    for (double thru = 0.0; thru <= 0.8; thru += 0.005)
+    for (double thru = 0.0; thru <= 0.6; thru += 0.001)
     {
         for (double vel = 0.0; vel <= 1.0; vel += 0.5)
         {
@@ -291,26 +295,27 @@ void test_pareto()
                 REACSA::StateVec state_weight = {1., 1., 0.12, vel * 1., vel * 1., vel * 0.12, 0.0};
                 REACSA::StateVec state_final_weight = state_weight * final_mul;
                 std::string name = "test_force-" + std::to_string(thru) + "_vel-" + std::to_string(vel) + "_finalmul-" + std::to_string(final_mul);
-                do_sim("drake", state_weight, state_final_weight, input_weight, name, 0.1);
-                do_sim("acados", state_weight, state_final_weight, input_weight, name, 0.1);
-                do_sim("drakemi1", state_weight, state_final_weight, input_weight, name, 0.1);
-                do_sim("acadosmi1", state_weight, state_final_weight, input_weight, name, 0.1);
-                do_sim("drakemi2", state_weight, state_final_weight, input_weight, name, 0.1);
-                do_sim("acadosmi2", state_weight, state_final_weight, input_weight, name, 0.1);
+                do_sim(controller, state_weight, state_final_weight, input_weight, name, 0.1);
+                //do_sim("drake", state_weight, state_final_weight, input_weight, name, 0.1);
+                //do_sim("acados", state_weight, state_final_weight, input_weight, name, 0.1);
+                //do_sim("drakemi1", state_weight, state_final_weight, input_weight, name, 0.1);
+                //do_sim("acadosmi1", state_weight, state_final_weight, input_weight, name, 0.1);
+                //do_sim("drakemi2", state_weight, state_final_weight, input_weight, name, 0.1);
+                //do_sim("acadosmi2", state_weight, state_final_weight, input_weight, name, 0.1);
                 //do_sim("drakemi3", state_weight, state_final_weight, input_weight, name, 0.1);
                 //do_sim("acadosmi3", state_weight, state_final_weight, input_weight, name, 0.1);
-                do_sim("scip", state_weight, state_final_weight, input_weight, name, 0.1);
+                //do_sim("scip", state_weight, state_final_weight, input_weight, name, 0.1);
             }
         }
     }
 }
 
-int main()
+int main(int arg, char **argv)
 {
     struct sched_param params;
     params.sched_priority = sched_get_priority_max(SCHED_FIFO);
     pthread_t thread_handle = pthread_self();
     pthread_setschedparam(thread_handle, SCHED_FIFO, &params);
 
-    test_pareto();
+    test_pareto(argv[1]);
 }

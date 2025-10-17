@@ -41,12 +41,12 @@ namespace mimpc::simulation {
         //clamp state to stay feasible:
         for (unsigned int state_idx = 0; state_idx < MPCType::SYSTEM_TYPE::NUM_STATES; state_idx++) {
             if (system_state[state_idx] < state_constraints_lb_[state_idx]) {
-                std::cout << "clamp up state " << state_idx << "from [" << system_state[state_idx] << "] to ["
-                          << state_constraints_lb_[state_idx] << "]" << std::endl;
+                std::cout << "- clamp up state " << state_idx << "from [" << system_state[state_idx] << "] to ["
+                          << state_constraints_lb_[state_idx] << "]";
                 system_state[state_idx] = state_constraints_lb_[state_idx];
             } else if (system_state[state_idx] > state_constraints_ub_[state_idx]) {
-                std::cout << "clamp down state " << state_idx << "from [" << system_state[state_idx] << "] to ["
-                          << state_constraints_ub_[state_idx] << "]" << std::endl;
+                std::cout << "- clamp down state " << state_idx << "from [" << system_state[state_idx] << "] to ["
+                          << state_constraints_ub_[state_idx] << "]";
                 system_state[state_idx] = state_constraints_ub_[state_idx];
             }
         }
