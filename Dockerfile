@@ -61,5 +61,6 @@ COPY README.md /home/mimpc/
 WORKDIR /home/mimpc
 RUN mkdir build && cd build &&  cmake .. -DBuildSim=ON -DBuildExamples=ON && make install
 RUN mkdir docs && doxygen Doxyfile
+RUN mkdir data_out
 
 CMD bash

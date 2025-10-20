@@ -241,11 +241,11 @@ void do_sim(std::string solver_name, REACSA::StateVec &state_weight, REACSA::Sta
     MPC<REACSA, SolverT> mpc(*(solver.get()));
     Simulation<decltype(mpc)> sim(0.0, reacsa_model, mpc, init_state, target_state, REACSA::StateVec::Constant(0.05),
                                   state_const_lb,
-                                  state_const_ub, true, systems::reacsa_constants::FORCE_THRUSTER, controller_dt, 100.0);
+                                  state_const_ub, false, systems::reacsa_constants::FORCE_THRUSTER, controller_dt, 100.0);
     sim.simulateToTarget(60.0);
 
     auto ret = sim.simulate(60.0);
-    sim.saveData(name + "_" + solver_name + "_" + std::to_string(solve_time_limit) + ".npz");
+    sim.saveData("data_out/" + name + "_" + solver_name + "_" + std::to_string(solve_time_limit) + ".npz");
     if (ret == -1)
     {
         exit(130);
@@ -285,7 +285,7 @@ void test_pareto(std::string controller)
     REACSA::StateVec state_weight = {1., 1., 0.12, 0.0, 0.0, 0.0, 0.0};
     REACSA::StateVec state_final_weight = state_weight * 10;
 
-    for (double thru = 0.0; thru <= 0.6; thru += 0.001)
+    for (double thru = 0.287000; thru <= 0.6; thru += 0.001)
     {
         for (double vel = 0.0; vel <= 1.0; vel += 0.5)
         {
