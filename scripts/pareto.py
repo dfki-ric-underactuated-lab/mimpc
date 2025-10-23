@@ -21,7 +21,7 @@ def get_occurance_of_time_step_in_sequence(time_step: float, time_sequence: np.n
             return i
 
 
-data_dir = Path("gnc2_test_oct_big2")
+data_dir = Path("../gnc2_test_oct_big2")
 
 rows = []
 
@@ -169,7 +169,7 @@ def process_npz(npz_path: Path):
     return res
 
 pandas_df_store = "data.pkl"
-redo = False
+redo = True
 
 if redo or not os.path.exists(pandas_df_store):
     files = sorted(data_dir.glob("*.npz"))
@@ -396,24 +396,24 @@ p = (
 ).save("experiment_status_compact.pdf")
 
 
-p = (
-    p9.ggplot(df_melt.query("failed==False & controller!='scip'"), aes(x="thrust", y="value", color="mi", fill="mi"))
-    + p9.geom_point(size=0.7, alpha=0.5, stroke=0.0)
-    + p9.facet_grid(rows="metric + '.' + part", cols="controller", scales="free", labeller=p9.labeller(cols=solver_mi_name_map, rows=measurement_name_mao))
-    #+ p9.geom_point(df_melt[df_melt["failed"] == True], p9.aes(x="thrust", y=np.inf, color="mi", alpha=0.2), shape="x")
-    + p9.geom_line(df_melt.query("pareto_optimal_melt==True & controller!='scip'"), size=0.7, alpha=0.8, linetype="-.")
-    + p9.geom_point(df_melt.query("pareto_optimal_melt==True & controller!='scip'"), size=1., alpha=.9, stroke=0.0)
-    + p9.scale_x_log10()
-    + p9.scale_y_log10()
-    + p9.scale_color_discrete(labels=solver_mi_name_map, name="MI information level")
-    + p9.scale_fill_discrete(labels=solver_mi_name_map, name="MI information level")
-    + p9.labs(x='Average thrust usage (s/s)', y='')
-    + p9.guides(color=p9.guide_legend(nrow=1))
-    + p9.theme_bw() + p9.theme(figure_size=(euro_gnc_with_in,5), #inches
-                text=p9.element_text(size=10, family="Times New Roman"),
-                ) 
-    + leg_below
-).save("comp_mi.pdf")
+# p = (
+#     p9.ggplot(df_melt.query("failed==False & controller!='scip'"), aes(x="thrust", y="value", color="mi", fill="mi"))
+#     + p9.geom_point(size=0.7, alpha=0.5, stroke=0.0)
+#     + p9.facet_grid(rows="metric + '.' + part", cols="controller", scales="free", labeller=p9.labeller(cols=solver_mi_name_map, rows=measurement_name_mao))
+#     #+ p9.geom_point(df_melt[df_melt["failed"] == True], p9.aes(x="thrust", y=np.inf, color="mi", alpha=0.2), shape="x")
+#     + p9.geom_line(df_melt.query("pareto_optimal_melt==True & controller!='scip'"), size=0.7, alpha=0.8, linetype="-.")
+#     + p9.geom_point(df_melt.query("pareto_optimal_melt==True & controller!='scip'"), size=1., alpha=.9, stroke=0.0)
+#     + p9.scale_x_log10()
+#     + p9.scale_y_log10()
+#     + p9.scale_color_discrete(labels=solver_mi_name_map, name="MI information level")
+#     + p9.scale_fill_discrete(labels=solver_mi_name_map, name="MI information level")
+#     + p9.labs(x='Average thrust usage (s/s)', y='')
+#     + p9.guides(color=p9.guide_legend(nrow=1))
+#     + p9.theme_bw() + p9.theme(figure_size=(euro_gnc_with_in,5), #inches
+#                 text=p9.element_text(size=10, family="Times New Roman"),
+#                 ) 
+#     + leg_below
+# ).save("comp_mi.pdf")
 
 
 knees = []
@@ -441,8 +441,11 @@ for cont in ["scip", "drake"]:
 knee_df = pd.DataFrame.from_records(knees)
 
 print(knee_df)
+print(df_melt)
 
 query = "(mi=='' | mi=='0' | mi=='1' | mi=='2') & (metric!='rms_orient') & (controller!='acados')"
+
+print(df_melt.query(f"failed==False & ({query})"))
 p = (
     p9.ggplot(df_melt.query(f"failed==False & ({query})"), aes(x="thrust", y="value", color="controller + '.' + time_limit + '.' + mi", fill="controller + '.' + time_limit + '.' + mi"))
     + p9.geom_point(size=.6, alpha=0.9, stroke=0.0)
@@ -491,15 +494,21 @@ p = (
 
 
 
-# p = (
-#     p9.ggplot(df_melt, aes(x="thrust_weight", y="value", color="controller"))
-#     + p9.geom_point(size=4)
-#     + p9.facet_wrap("~metric", scales="free")
-# ).show()
+p = (
+    p9.ggplot(df_melt, aes(x="thrust_weight", y="value", color="controller"))
+    + p9.geom_point(size=4)
+    + p9.facet_wrap("~metric", scales="free")
+).save("h1.pdf")
 
 
-# p = (
-#     p9.ggplot(df_melt, aes(x="vel_weight", y="value", color="controller"))
-#     + p9.geom_point(size=4)
-#     + p9.facet_wrap("~metric", scales="free")
-# ).show()
+p = (
+    p9.ggplot(df_melt, aes(x="vel_weight", y="value", color="controller"))
+    + p9.geom_point(size=4)
+    + p9.facet_wrap("~metric", scales="free")
+).show()
+
+p = (
+    p9.ggplot(df_melt, aes(fill="fail_reason", x="thrust_weight"))
+    + p9.geom_histogram()
+    + p9.facet_grid(rows="metric",cols="controller", scales="free")
+).save("h2.pdf")
